@@ -1,0 +1,20 @@
+{
+    "name": "dduers/f3-app",
+    "description": "Secure boilerplate for a fat-free framework (f3) web app",
+    "type": "library",
+    "require": {
+        "bcosca/fatfree-core": "^3.7"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Daniel Duersteler",
+            "email": "daniel.duersteler@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Dduers\\F3App\\": "src"
+        }
+    }
+}
