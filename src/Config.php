@@ -23,7 +23,7 @@ final class Config extends \Prefab
     function __construct(\Base $f3_)
     {
         // load configuration files
-        foreach (glob('../app/config/*.ini') as $_inifile)
+        foreach (glob('../config/*.ini') as $_inifile)
             $f3_->config($_inifile);
     }
 }

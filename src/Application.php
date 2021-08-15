@@ -35,30 +35,32 @@ final class Application extends \Prefab
         // init the logger object
         self::$_f3['Log'] = new \Log(date('Y-m-d').'.log');
         // create database connection, store to DB f3 hive variable for usage in orm models
-        self::$_f3['Base']->set('DB',
-            self::$_f3['DB'] = new \DB\SQL(
-                (self::$_f3['Base']->get('database.type') ?: self::$_config::DB_DEFAULT_TYPE)
-                    .':host='.(self::$_f3['Base']->get('database.host') ?: self::$_config::DB_DEFAULT_HOST)
-                    .';port='.(self::$_f3['Base']->get('database.port') ?: self::$_config::DB_DEFAULT_PORT)
-                    .';dbname='.self::$_f3['Base']->get('database.data'),
-                self::$_f3['Base']->get('database.user'),
-                self::$_f3['Base']->get('database.pass')
-            )
-        );
+        if (self::$_f3['Base']->get('CONF.db.enable'))
+            self::$_f3['Base']->set('DB',
+                self::$_f3['DB'] = new \DB\SQL(
+                    (self::$_f3['Base']->get('CONF.db.type') ?: self::$_config::DB_DEFAULT_TYPE)
+                        .':host='.(self::$_f3['Base']->get('CONF.db.host') ?: self::$_config::DB_DEFAULT_HOST)
+                        .';port='.(self::$_f3['Base']->get('CONF.db.port') ?: self::$_config::DB_DEFAULT_PORT)
+                        .';dbname='.self::$_f3['Base']->get('CONF.db.database'),
+                    self::$_f3['Base']->get('CONF.db.user'),
+                    self::$_f3['Base']->get('CONF.db.pass')
+                )
+            );
         // create mail server connection
-        self::$_f3['SMTP'] = new \SMTP(
-            self::$_f3['Base']->get('mail.host') ?: self::$_config::SMTP_DEFAULT_HOST,
-            self::$_f3['Base']->get('mail.port') ?: self::$_config::SMTP_DEFAULT_PORT,
-            self::$_f3['Base']->get('mail.scheme'),
-            self::$_f3['Base']->get('mail.user'),
-            self::$_f3['Base']->get('mail.pass')
-        );
+        if (self::$_f3['Base']->get('CONF.smtp.enable'))
+            self::$_f3['SMTP'] = new \SMTP(
+                self::$_f3['Base']->get('CONF.smtp.host') ?: self::$_config::SMTP_DEFAULT_HOST,
+                self::$_f3['Base']->get('CONF.smtp.port') ?: self::$_config::SMTP_DEFAULT_PORT,
+                self::$_f3['Base']->get('CONF.smtp.scheme'),
+                self::$_f3['Base']->get('CONF.smtp.user'),
+                self::$_f3['Base']->get('CONF.smtp.pass')
+            );
         
         // if the user agent is not a bot, otherwise default session
         if (self::$_f3['Audit']->isbot()) {
             self::$_f3['Session'] = NULL;
         } else {
-            switch (strtolower(self::$_f3['Base']->get('session.engine') ?? '')) {
+            switch (strtolower(self::$_f3['Base']->get('CONF.session.engine') ?? '')) {
                 default:
                     self::$_f3['Session'] = NULL;
                     self::$_f3['Base']->set('CSRF', self::createToken());
