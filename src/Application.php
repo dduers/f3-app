@@ -240,4 +240,9 @@ final class Application extends \Prefab
     {
         return bin2hex(random_bytes(16));
     }
+
+    public function runApplication()
+    {
+        self::$_f3['Base']->run();
+    }
 }
