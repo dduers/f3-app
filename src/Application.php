@@ -24,7 +24,7 @@ final class Application extends \Prefab
     function __construct()
     {
         // store framework instance locally
-        self::$_f3['Base'] = \Base::instance();
+        self::$_f3['Base'] = \Base::instance(); 
         self::$_config = \Dduers\F3App\Config::instance(self::$_f3['Base']);
         // store web instance locally
         self::$_f3['Web'] = \Web::instance();
