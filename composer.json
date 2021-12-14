@@ -6,12 +6,12 @@
         "bcosca/fatfree-core": "^3.7"
     },
     "license": "MIT",
-    "authors": [
-        {
-            "name": "Daniel Duersteler",
-            "email": "daniel.duersteler@gmail.com"
-        }
-    ],
+    "authors": [{
+        "name": "Daniel Duersteler",
+        "email": "daniel.duersteler@gmail.com",
+        "homepage": "https://www.xsite.ch",
+        "role": "Developer"
+    }],
     "autoload": {
         "psr-4": {
             "Dduers\\F3App\\": "src"
