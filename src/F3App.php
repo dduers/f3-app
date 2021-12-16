@@ -114,12 +114,12 @@ class F3App extends Prefab
         if ($f3_->get('RESPONSE.header.methods'))
             header('Access-Control-Allow-Methods: ' . $f3_->get('RESPONSE.header.methods'));
 
-        if ($_allow_header = strtolower(implode(',', $f3_->get('CONF.header.allowheader') ?? []))) 
+        if ($_allow_header = strtolower(implode(',', $f3_->get('CONF.header.allowheader') ?? [])))
             header('Access-Control-Allow-Headers: ' . $_allow_header);
 
         header('Access-Control-Allow-Credentials: true');
 
-        if ($_content_type = strtolower($f3_->get('CONF.header.contenttype'))) 
+        if ($_content_type = strtolower($f3_->get('CONF.header.contenttype')))
             header('Content-Type: ' . $_content_type);
 
         if ($f3_->get('RESPONSE.filename'))
@@ -297,6 +297,8 @@ class F3App extends Prefab
         if ((int)self::vars('CONF.security.xss.enable') !== 1)
             return;
 
+        self::logs(['post' => self::vars('POST'), 'verb' => self::vars('VERB')]);
+
         switch (self::vars('VERB')) {
             case 'POST':
                 $_data = self::vars('POST');
@@ -306,7 +308,6 @@ class F3App extends Prefab
                     $_data[$key_] = self::$_f3->clean($value_);
                 }
                 self::vars('POST', array_filter($_data));
-                self::logs(self::vars('POST'));
                 break;
             case 'PUT':
                 $_data = self::vars('PUT');
