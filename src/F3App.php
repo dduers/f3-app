@@ -306,6 +306,7 @@ class F3App extends Prefab
                     $_data[$key_] = self::$_f3->clean($value_);
                 }
                 self::vars('POST', array_filter($_data));
+                self::logs(self::vars('POST'));
                 break;
             case 'PUT':
                 $_data = self::vars('PUT');
