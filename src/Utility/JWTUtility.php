@@ -15,7 +15,7 @@ class JWTUtility
     /**
      * generate jwt token
      * @param array $headers_ array('alg'=>'HS256','typ'=>'JWT');
-     * @param array $payload_ array('name'=>'John Doe', 'exp'=>(time() + 60));
+     * @param array $payload_ array('email'=>'John.Doe@nobody.com', 'exp'=>(time() + 60));
      * @param string $secret_
      * @return string token
      */
