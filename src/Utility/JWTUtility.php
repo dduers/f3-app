@@ -19,7 +19,7 @@ class JWTUtility
      * @param string $secret_
      * @return string token
      */
-    public function generate(array $headers_, array $payload_, string $secret_ = self::DEFAULT_SECRET): string
+    public function generate(array $payload_, array $headers_ = ['typ' => 'JWT', 'alg' => 'HS256'], string $secret_ = self::DEFAULT_SECRET): string
     {
         $_encoded_headers = $this->base64url_encode(json_encode($headers_));
         $_encoded_payload = $this->base64url_encode(json_encode($payload_));
