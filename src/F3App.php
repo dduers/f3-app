@@ -297,8 +297,6 @@ class F3App extends Prefab
         if ((int)self::vars('CONF.security.xss.enable') !== 1)
             return;
 
-        
-
         switch (self::vars('VERB')) {
             case 'POST':
                 $_data = self::vars('POST');
@@ -317,7 +315,6 @@ class F3App extends Prefab
                     $_data[$key_] = self::$_f3->clean($value_);
                 }
                 self::vars('PUT', array_filter($_data));
-                self::logs([self::vars('VERB') => self::vars(self::vars('VERB'))]);
                 break;
         }
         return;
