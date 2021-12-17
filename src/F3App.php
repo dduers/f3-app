@@ -321,6 +321,19 @@ class F3App extends Prefab
     }
 
     /**
+     * get bearer token from authorization header
+     * @return string
+     */
+    static public function getBearerToken(): string
+    {
+        $_auth_header_prefix = 'Bearer ';
+        $_auth_header = self::$_request_headers['Authorization'] ?? '';
+        if (strpos($_auth_header, $_auth_header_prefix) === 0)
+            return substr($_auth_header, strlen($_auth_header_prefix));
+        return '';
+    }
+    
+    /**
      * get framework instance
      * @return Base
      */
