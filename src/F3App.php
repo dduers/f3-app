@@ -165,7 +165,7 @@ class F3App extends Prefab
      * @param string $ctrl_ name of controller
      * @return void
      */
-    static protected function reroute(string $vers_, string $ctrl_, string $id_ = ''): void
+    static public function reroute(string $vers_, string $ctrl_, string $id_ = ''): void
     {
         self::$_f3->reroute($vers_ . '/' . $ctrl_ . ($id_ ? '/' . $id_ : '')(self::$_f3->get('QUERY') ? '?' . self::$_f3->get('QUERY') : ''));
         return;
@@ -177,14 +177,14 @@ class F3App extends Prefab
      * @param mixed $value_ (optional) if set, the var is updated with the value
      * @return mixed current value or new value of f3 hive variable
      */
-    static protected function vars(string $name_, $value_ = NULL)
+    static public function vars(string $name_, $value_ = NULL)
     {
         if (isset($value_))
             return (self::$_f3->set($name_, $value_));
         else return (self::$_f3->get($name_));
     }
 
-    static protected function vars_cache(string $name_, $value_ = NULL)
+    static public function vars_cache(string $name_, $value_ = NULL)
     {
         if (isset($value_))
             return (self::$_cache->set($name_, $value_));
@@ -197,7 +197,7 @@ class F3App extends Prefab
      * @param string $format_ (optional) e.g. 'r' for rfc 2822 log format
      * @return void
      */
-    static protected function logs($text_, string $format_ = 'r'): void
+    static public function logs($text_, string $format_ = 'r'): void
     {
         if (is_string($text_))
             self::$_log->write($text_, $format_);
@@ -214,7 +214,7 @@ class F3App extends Prefab
      * @param array $attach_ (optional) array of filenames
      * @return bool true on success, false on error
      */
-    static protected function mail($to_, string $subject_, string $message_, string $from_addr_ = NULL, string $from_name_ = NULL, array $attach_ = []): bool
+    static public function mail($to_, string $subject_, string $message_, string $from_addr_ = NULL, string $from_name_ = NULL, array $attach_ = []): bool
     {
         if (!((int)self::$_f3->get('CONF.mail.enable') === 1))
             return false;

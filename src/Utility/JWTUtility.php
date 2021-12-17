@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Dduers\F3App\Utility;
 
-class JWTUtility
+use Prefab;
+
+final class JWTUtility extends Prefab
 {
     private const DEFAULT_SECRET = 'öjhefwn/&()/&HIJFIOENFIOEN()*Zuio)(*';
 
