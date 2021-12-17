@@ -21,12 +21,12 @@ final class JWTUtility extends Prefab
      * @param string $secret_
      * @return string token
      */
-    public function generate(array $payload_, array $headers_ = ['typ' => 'JWT', 'alg' => 'HS256'], string $secret_ = self::DEFAULT_SECRET): string
+    static public function generate(array $payload_, array $headers_ = ['typ' => 'JWT', 'alg' => 'HS256'], string $secret_ = self::DEFAULT_SECRET): string
     {
-        $_encoded_headers = $this->base64url_encode(json_encode($headers_));
-        $_encoded_payload = $this->base64url_encode(json_encode($payload_));
+        $_encoded_headers = self::base64url_encode(json_encode($headers_));
+        $_encoded_payload = self::base64url_encode(json_encode($payload_));
         $_signature = hash_hmac('SHA256', implode('.', [$_encoded_headers, $_encoded_payload]), $secret_, true);
-        $_encoded_signature = $this->base64url_encode($_signature);
+        $_encoded_signature = self::base64url_encode($_signature);
         $_jwt = implode('.', [$_encoded_headers, $_encoded_payload, $_encoded_signature]);
         return $_jwt;
     }
@@ -37,7 +37,7 @@ final class JWTUtility extends Prefab
      * @param string $secret_
      * @return bool 
      */
-    public function validate(string $jwt_, string $secret_ = self::DEFAULT_SECRET): bool
+    static public function validate(string $jwt_, string $secret_ = self::DEFAULT_SECRET): bool
     {
         $_jwt_split = explode('.', $jwt_);
 
@@ -50,10 +50,10 @@ final class JWTUtility extends Prefab
         $_is_token_expired = ($_expiration - time()) < 0;
 
         // build signature based on the header and payload using the secret
-        $_encoded_header = $this->base64url_encode($_decoded_header);
-        $_encoded_payload = $this->base64url_encode($_decoded_payload);
+        $_encoded_header = self::base64url_encode($_decoded_header);
+        $_encoded_payload = self::base64url_encode($_decoded_payload);
         $_signature = hash_hmac('SHA256', implode('.', [$_encoded_header, $_encoded_payload]), $secret_, true);
-        $_encoded_signature = $this->base64url_encode($_signature);
+        $_encoded_signature = self::base64url_encode($_signature);
 
         // verify it matches the signature provided in the jwt
         $_is_signature_valid = ($_encoded_signature === $_signature_given);
@@ -67,9 +67,9 @@ final class JWTUtility extends Prefab
      * @param string $secret_
      * @return NULL|array
      */
-    public function decode(string $jwt_, string $secret_ = self::DEFAULT_SECRET)
+    static public function decode(string $jwt_, string $secret_ = self::DEFAULT_SECRET)
     {
-        if (!$this->validate($jwt_, $secret_))
+        if (!self::validate($jwt_, $secret_))
             return NULL;
 
         $_jwt_split = explode('.', $jwt_);
@@ -85,7 +85,7 @@ final class JWTUtility extends Prefab
      * @param string $json_string_
      * @return string
      */
-    private function base64url_encode(string $json_string_): string
+    static private function base64url_encode(string $json_string_): string
     {
         return str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($json_string_));
     }

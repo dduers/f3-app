@@ -15,6 +15,11 @@ final class CookieUtility extends Prefab
         self::$_options = $options_;
     }
 
+    /**
+     * issue a cookie
+     * @param string $name_
+     * @param string $value_
+     */
     static public function setCookie(string $name_, string $value_): array
     {
         $_options = array_filter([
@@ -32,15 +37,11 @@ final class CookieUtility extends Prefab
 
     /**
      * set cookie options
+     * @param array $options_
+     * @return void
      */
-    static public function setOptions(array $options_)
+    static public function setOptions(array $options_): void
     {
         self::$_options = array_filter($options_);
     }
-    
-
-
-
-
-
 }
