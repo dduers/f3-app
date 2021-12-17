@@ -9,6 +9,8 @@ use Prefab;
 final class JWTUtility extends Prefab
 {
     private const DEFAULT_SECRET = 'öjhefwn/&()/&HIJFIOENFIOEN()*Zuio)(*';
+    private const DEFAULT_LIFETIME = 60;
+    static private array $_options = [];
 
     function __construct()
     {
@@ -23,9 +25,15 @@ final class JWTUtility extends Prefab
      */
     static public function generate(array $payload_, array $headers_ = ['typ' => 'JWT', 'alg' => 'HS256'], string $secret_ = self::DEFAULT_SECRET): string
     {
+        $_secret = (self::$_options['secret'] ?? '') ?: $secret_;
+        $_payload = array_merge(
+            $payload_,
+            ['exp' => (self::$_options['lifetime'] ?? '') ? time() + (int)self::$_options['lifetime'] : time() + (int)self::DEFAULT_LIFETIME]
+        );
+
         $_encoded_headers = self::base64url_encode(json_encode($headers_));
-        $_encoded_payload = self::base64url_encode(json_encode($payload_));
-        $_signature = hash_hmac('SHA256', implode('.', [$_encoded_headers, $_encoded_payload]), $secret_, true);
+        $_encoded_payload = self::base64url_encode(json_encode($_payload));
+        $_signature = hash_hmac('SHA256', implode('.', [$_encoded_headers, $_encoded_payload]), $_secret, true);
         $_encoded_signature = self::base64url_encode($_signature);
         $_jwt = implode('.', [$_encoded_headers, $_encoded_payload, $_encoded_signature]);
         return $_jwt;
@@ -39,6 +47,7 @@ final class JWTUtility extends Prefab
      */
     static public function validate(string $jwt_, string $secret_ = self::DEFAULT_SECRET): bool
     {
+        $_secret = (self::$_options['secret'] ?? '') ?: $secret_;
         $_jwt_split = explode('.', $jwt_);
 
         $_decoded_header = base64_decode($_jwt_split[0]);
@@ -52,7 +61,7 @@ final class JWTUtility extends Prefab
         // build signature based on the header and payload using the secret
         $_encoded_header = self::base64url_encode($_decoded_header);
         $_encoded_payload = self::base64url_encode($_decoded_payload);
-        $_signature = hash_hmac('SHA256', implode('.', [$_encoded_header, $_encoded_payload]), $secret_, true);
+        $_signature = hash_hmac('SHA256', implode('.', [$_encoded_header, $_encoded_payload]), $_secret, true);
         $_encoded_signature = self::base64url_encode($_signature);
 
         // verify it matches the signature provided in the jwt
@@ -88,5 +97,15 @@ final class JWTUtility extends Prefab
     static private function base64url_encode(string $json_string_): string
     {
         return str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($json_string_));
+    }
+
+    /**
+     * set cookie options
+     * @param array $options_
+     * @return void
+     */
+    static public function setOptions(array $options_): void
+    {
+        self::$_options = array_filter($options_);
     }
 }

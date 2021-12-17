@@ -10,9 +10,8 @@ final class CookieUtility extends Prefab
 {
     static private array $_options = [];
 
-    function __construct(array $options_ = [])
+    function __construct()
     {
-        self::$_options = $options_;
     }
 
     /**
