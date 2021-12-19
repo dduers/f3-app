@@ -28,7 +28,7 @@ final class DatabaseService extends Prefab
         if ((int)self::$_options['enable'] === 1) {
 
             if (!self::$_db)
-                switch (strtolower(self::$_options['type'])) {
+                switch (strtolower(self::$_options['engine'])) {
 
                     case 'sql':
                         self::$_db = new SQL(
