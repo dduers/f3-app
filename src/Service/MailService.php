@@ -83,8 +83,8 @@ final class MailService extends Prefab
             $_toaddr[] = '<' . trim($_x) . '>';
 
         $_toaddr = implode(', ', $_toaddr);
-        $from_addr_ = $from_addr_ ?: self::$_options['defaultsender.email'];
-        $from_name_ = $from_name_ ?: (self::$_options['defaultsender.name'] ?: self::$_options['defaultsender.email']);
+        $from_addr_ = $from_addr_ ?: self::$_options['defaultsender']['email'];
+        $from_name_ = $from_name_ ?: (self::$_options['defaultsender']['name'] ?: self::$_options['defaultsender']['email']);
 
         self::$_service->set('To', $_toaddr);
         self::$_service->set('From', '"' . $from_name_ . '" ' . '<' . $from_addr_ . '>');

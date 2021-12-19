@@ -31,7 +31,7 @@ final class SessionService extends Prefab
      */
     static private function init(): void
     {
-        foreach (self::$_options['cookie.options'] as $option_ => $value_) {
+        foreach (self::$_options['cookie']['options'] as $option_ => $value_) {
             if (isset($value_))
                 ini_set('session.cookie_' . $option_, (string)$value_);
         }
