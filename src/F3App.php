@@ -77,7 +77,7 @@ class F3App extends Prefab
                 self::$_session = new JigSession(self::$_db, $f3_->get('CONF.session.table'), NULL, $f3_->get('CONF.session.key'));
                 break;
 
-            case 'cache'
+            case 'cache':
                 self::$_session = new Session(NULL, $f3_->get('CONF.session.key'), self::$_cache);
                 break;
 
