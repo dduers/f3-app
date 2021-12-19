@@ -7,7 +7,10 @@ namespace Dduers\F3App;
 use Dduers\F3App\F3AppConfig;
 use Base;
 use Cache;
+use DB\Jig\Session as JigSession;
+use DB\Mongo\Session as MongoSession;
 use DB\SQL;
+use DB\SQL\Session as SQLSession;
 use SMTP;
 use Log;
 use Prefab;
@@ -56,22 +59,32 @@ class F3App extends Prefab
      */
     static public function beforeroute(Base $f3_): void
     {
-        /*
-        session_set_cookie_params(array_filter([
-            'lifetime' => (int)self::vars('CONF.cookie.session.options.lifetime'),
-            'path' => (string)self::vars('CONF.cookie.session.options.path'),
-            'domain' => (string)self::vars('CONF.cookie.session.options.domain'),
-            'secure' => (bool)self::vars('CONF.cookie.session.options.secure'),
-            'httponly' => (bool)self::vars('CONF.cookie.session.options.httponly'),
-            'samesite' => (string)self::vars('CONF.cookie.session.options.samesite'),
-        ]));
-        */
         foreach (self::vars('CONF.cookie.session.options') as $option_ => $value_) {
             if (isset($value_))
-                ini_set('session.cookie_'.$option_, (string)$value_);
+                ini_set('session.cookie_' . $option_, (string)$value_);
         }
-        self::$_session = new Session();
-        self::vars('SESSION.test', '123');
+
+        switch (strtolower($f3_->get('CONF.session.engine'))) {
+            case 'sql':
+                self::$_session = new SQLSession(self::$_db, $f3_->get('CONF.session.table'), TRUE, NULL, $f3_->get('CONF.session.key'));
+                break;
+
+            case 'mongo':
+                self::$_session = new MongoSession(self::$_db, $f3_->get('CONF.session.table'), NULL, $f3_->get('CONF.session.key'));
+                break;
+
+            case 'jig':
+                self::$_session = new JigSession(self::$_db, $f3_->get('CONF.session.table'), NULL, $f3_->get('CONF.session.key'));
+                break;
+
+            case 'cache'
+                self::$_session = new Session(NULL, $f3_->get('CONF.session.key'), self::$_cache);
+                break;
+
+            default:
+                self::$_session = new Session(NULL, $f3_->get('CONF.session.key'));
+                break;
+        }
 
         if (!count(glob($f3_->get('LOCALES') . '*.ini')))
             throw new Exception('DICTIONARY check failed');
@@ -351,7 +364,7 @@ class F3App extends Prefab
             return substr($_auth_header, strlen($_auth_header_prefix));
         return '';
     }
-    
+
     /**
      * get framework instance
      * @return Base
