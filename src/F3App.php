@@ -13,6 +13,7 @@ use Log;
 use Prefab;
 use Template;
 use Exception;
+use Session;
 
 /**
  * application base controller
@@ -26,6 +27,7 @@ class F3App extends Prefab
     static private $_db;
     static private $_smtp;
     static private $_log;
+    static private $_session;
     static private array $_request_headers = [];
 
     /**
@@ -50,6 +52,7 @@ class F3App extends Prefab
             'httponly' => (bool)self::vars('CONF.cookie.session.options.httponly'),
             'samesite' => (string)self::vars('CONF.cookie.session.options.samesite'),
         ]));
+
         /*
         foreach (self::vars('CONF.cookie.session.options') as $option_ => $value_) {
             if ($value_)
@@ -69,6 +72,8 @@ class F3App extends Prefab
      */
     static public function beforeroute(Base $f3_): void
     {
+        self::$_session = new Session();
+        
         if (!count(glob($f3_->get('LOCALES') . '*.ini')))
             throw new Exception('DICTIONARY check failed');
 
