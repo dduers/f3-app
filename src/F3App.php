@@ -64,7 +64,7 @@ class F3App extends Prefab
                 ini_set('session.cookie_' . $option_, (string)$value_);
         }
 
-        switch (strtolower($f3_->get('CONF.session.engine'))) {
+        switch (strtolower((string)$f3_->get('CONF.session.engine'))) {
             case 'sql':
                 self::$_session = new SQLSession(self::$_db, $f3_->get('CONF.session.table'), TRUE, NULL, $f3_->get('CONF.session.key'));
                 break;
