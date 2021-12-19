@@ -18,24 +18,48 @@ final class CookieUtility extends Prefab
      * issue a cookie
      * @param string $name_
      * @param string $value_
+     * @param array $options_ override default options
+     * @return array options used to issue the cookie
      */
-    static public function setCookie(string $name_, string $value_): array
+    static public function setCookie(string $name_, string $value_, array $options_ = []): array
     {
-        $_options = array_filter([
-            'expires' => (string)(self::$_options['lifetime'] ?? '') ? (string)(time() + (int)self::$_options['lifetime']) : NULL,
-            'domain' => (string)(self::$_options['domain'] ?? '') ?: NULL,
-            'httponly' => (string)(self::$_options['httponly'] ?? '') ?: NULL,
-            'secure' => (string)(self::$_options['secure'] ?? '') ?: NULL,
-            'path' => (string)(self::$_options['path'] ?? '') ?: NULL,
-            'samesite' => (string)(self::$_options['samesite'] ?? '') ?: NULL,
-        ]);
+        $_options = array_merge(self::$_options, $options_);
 
-        setcookie($name_, $value_, $_options);
+        setcookie($name_, $value_, array_filter([
+            'expires' => (string)($_options['lifetime'] ?? '') ? (string)(time() + (int)$_options['lifetime']) : NULL,
+            'domain' => (string)($_options['domain'] ?? '') ?: NULL,
+            'httponly' => (string)($_options['httponly'] ?? '') ?: NULL,
+            'secure' => (string)($_options['secure'] ?? '') ?: NULL,
+            'path' => (string)($_options['path'] ?? '') ?: NULL,
+            'samesite' => (string)($_options['samesite'] ?? '') ?: NULL,
+        ]));
+
         return $_options;
     }
 
     /**
-     * set cookie options
+     * deletes php session cookie
+     */
+    static public function deleteSessionCookie()
+    {
+        if (ini_get('session.use_cookies')) {
+            $_params = session_get_cookie_params();
+            self::setCookie(
+                session_name(),
+                '',
+                [
+                    'lifetime' => -(3600 * 24 * 365 * 10),
+                    'path' => $_params['path'],
+                    'domain' => $_params['domain'],
+                    'secure' => $_params['secure'],
+                    'httponly' => $_params['httponly']
+                ]
+            );
+        }
+    }
+
+    /**
+     * set cookie default options
      * @param array $options_
      * @return void
      */
