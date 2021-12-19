@@ -44,7 +44,7 @@ class F3App extends Prefab
 
         foreach (self::vars('CONF.cookie.session.options') as $option_ => $value_) {
             if ($value_)
-                ini_set('session.cookie_'.$option_, $value_);
+                ini_set('session.cookie_'.$option_, (string)$value_);
         }
     }
 
