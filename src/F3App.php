@@ -56,6 +56,7 @@ class F3App extends Prefab
      */
     static public function beforeroute(Base $f3_): void
     {
+        /*
         session_set_cookie_params(array_filter([
             'lifetime' => (int)self::vars('CONF.cookie.session.options.lifetime'),
             'path' => (string)self::vars('CONF.cookie.session.options.path'),
@@ -64,16 +65,12 @@ class F3App extends Prefab
             'httponly' => (bool)self::vars('CONF.cookie.session.options.httponly'),
             'samesite' => (string)self::vars('CONF.cookie.session.options.samesite'),
         ]));
-
-        /*
+        */
         foreach (self::vars('CONF.cookie.session.options') as $option_ => $value_) {
-            if ($value_)
+            if (isset($value_))
                 ini_set('session.cookie_'.$option_, (string)$value_);
         }
-        */
-        
         self::$_session = new Session();
-
         self::vars('SESSION.test', '123');
 
         if (!count(glob($f3_->get('LOCALES') . '*.ini')))
