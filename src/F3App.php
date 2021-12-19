@@ -41,6 +41,11 @@ class F3App extends Prefab
         self::$_db = self::getDb();
         self::$_smtp = self::getSmtp();
         self::$_log = new Log(date('Y-m-d') . '.log');
+
+        foreach (self::vars('CONF.cookie.session.options') as $option_ => $value_) {
+            if ($value_)
+                ini_set('session.cookie_'.$option_, $value_);
+        }
     }
 
     /**
