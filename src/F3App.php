@@ -42,14 +42,14 @@ class F3App extends Prefab
         self::$_smtp = self::getSmtp();
         self::$_log = new Log(date('Y-m-d') . '.log');
 
-        session_set_cookie_params([
+        session_set_cookie_params(array_filter([
             'lifetime' => (int)self::vars('CONF.cookie.session.options.lifetime'),
             'path' => (string)self::vars('CONF.cookie.session.options.path'),
             'domain' => (string)self::vars('CONF.cookie.session.options.domain'),
             'secure' => (bool)self::vars('CONF.cookie.session.options.secure'),
             'httponly' => (bool)self::vars('CONF.cookie.session.options.httponly'),
             'samesite' => (string)self::vars('CONF.cookie.session.options.samesite'),
-        ]);
+        ]));
         /*
         foreach (self::vars('CONF.cookie.session.options') as $option_ => $value_) {
             if ($value_)
