@@ -19,6 +19,7 @@ use Session;
 use DB\SQL\Session as SQLSession;
 use DB\Mongo\Session as MongoSession;
 use DB\Jig\Session as JigSession;
+use Dduers\F3App\Service\DatabaseService;
 
 /**
  * application base controller
@@ -45,7 +46,12 @@ class F3App extends Prefab
         self::$_config = F3AppConfig::instance();
         self::$_f3 = self::getFw();
         self::$_cache = self::getCache();
-        self::$_db = self::getDb();
+
+        DatabaseService::instance(self::vars('CONF.database'));
+        self::$_db = DatabaseService::getService();
+
+
+
         self::$_smtp = self::getSmtp();
         self::$_log = new Log(date('Y-m-d') . '.log');
     }
@@ -393,35 +399,7 @@ class F3App extends Prefab
      */
     static public function getDb()
     {
-        if ((int)self::$_f3->get('CONF.database.enable') === 1) {
-
-            if (!self::$_db)
-                switch (strtolower(self::$_f3->get('CONF.database.type'))) {
-
-                    case 'sql':
-                        self::$_db = new SQL(
-                            self::$_f3->get('CONF.database.type')
-                                . ':host=' . self::$_f3->get('CONF.database.host')
-                                . ';port=' . self::$_f3->get('CONF.database.port')
-                                . ';dbname=' . self::$_f3->get('CONF.database.data'),
-                            self::$_f3->get('CONF.database.user'),
-                            self::$_f3->get('CONF.database.pass')
-                        );
-                        break;
-
-                    case 'jig':
-                        self::$_db = new Jig('../database/jig/' . self::$_f3->get('CONF.database.data') . '/', Jig::FORMAT_JSON);
-                        break;
-
-                    case 'mongo':
-                        self::$_db = new Mongo('mongodb://' . self::$_f3->get('CONF.database.host') . ':' . self::$_f3->get('CONF.database.port'), self::$_f3->get('CONF.database.data'), NULL);
-                        break;
-                }
-
-            return self::$_db;
-        }
-
-        return NULL;
+        return self::$_db;
     }
 
     /**
