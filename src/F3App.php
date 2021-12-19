@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Dduers\F3App;
 
-use Dduers\F3App\F3AppConfig;
 use Base;
 use Cache;
 use DB\SQL;
@@ -19,7 +18,9 @@ use Session;
 use DB\SQL\Session as SQLSession;
 use DB\Mongo\Session as MongoSession;
 use DB\Jig\Session as JigSession;
+use Dduers\F3App\F3AppConfig;
 use Dduers\F3App\Service\DatabaseService;
+use Dduers\F3App\Service\MailService;
 
 /**
  * application base controller
@@ -46,13 +47,8 @@ class F3App extends Prefab
         self::$_config = F3AppConfig::instance();
         self::$_f3 = self::getFw();
         self::$_cache = self::getCache();
-
-        DatabaseService::instance(self::vars('CONF.database'));
-        self::$_db = DatabaseService::getService();
-
-
-
-        self::$_smtp = self::getSmtp();
+        self::$_db = DatabaseService::instance(self::vars('CONF.database'))::getService();
+        self::$_smtp = MailService::instance(self::vars('CONF.mail'))::getService();
         self::$_log = new Log(date('Y-m-d') . '.log');
     }
 
@@ -408,18 +404,7 @@ class F3App extends Prefab
      */
     static public function getSmtp()
     {
-        if ((int)self::$_f3->get('CONF.mail.enable') === 1) {
-            if (!self::$_smtp)
-                self::$_smtp = new SMTP(
-                    self::$_f3->get('CONF.mail.host'),
-                    self::$_f3->get('CONF.mail.port'),
-                    self::$_f3->get('CONF.mail.scheme'),
-                    self::$_f3->get('CONF.mail.user'),
-                    self::$_f3->get('CONF.mail.pass')
-                );
-            return self::$_smtp;
-        }
-        return NULL;
+        return self::$_smtp;
     }
 
     /**
