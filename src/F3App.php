@@ -73,7 +73,9 @@ class F3App extends Prefab
     static public function beforeroute(Base $f3_): void
     {
         self::$_session = new Session();
-        
+
+        self::vars('SESSION.test', '123');
+
         if (!count(glob($f3_->get('LOCALES') . '*.ini')))
             throw new Exception('DICTIONARY check failed');
 
