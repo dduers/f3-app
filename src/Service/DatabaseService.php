@@ -55,4 +55,9 @@ final class DatabaseService extends Prefab
 
         return NULL;
     }
+
+    static public function getOptions(): array
+    {
+        return self::$_options;
+    }
 }
