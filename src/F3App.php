@@ -43,11 +43,11 @@ class F3App extends Prefab
         self::$_log = new Log(date('Y-m-d') . '.log');
 
         session_set_cookie_params([
-            'lifetime' => (string)self::vars('CONF.cookie.session.options.lifetime'),
+            'lifetime' => (int)self::vars('CONF.cookie.session.options.lifetime'),
             'path' => (string)self::vars('CONF.cookie.session.options.path'),
             'domain' => (string)self::vars('CONF.cookie.session.options.domain'),
-            'secure' => (string)self::vars('CONF.cookie.session.options.secure'),
-            'httponly' => (string)self::vars('CONF.cookie.session.options.httponly'),
+            'secure' => (bool)self::vars('CONF.cookie.session.options.secure'),
+            'httponly' => (bool)self::vars('CONF.cookie.session.options.httponly'),
             'samesite' => (string)self::vars('CONF.cookie.session.options.samesite'),
         ]);
         /*
