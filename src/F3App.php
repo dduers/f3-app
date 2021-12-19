@@ -43,7 +43,19 @@ class F3App extends Prefab
         self::$_db = self::getDb();
         self::$_smtp = self::getSmtp();
         self::$_log = new Log(date('Y-m-d') . '.log');
+    }
 
+    /**
+     * routing pre processor
+     * - csrf check for post and put requests
+     * - set / init very important variables
+     * - read request headers for later use
+     * - parse input streams to arrays
+     * @param Base $f3_ f3 framework instance
+     * @return void
+     */
+    static public function beforeroute(Base $f3_): void
+    {
         session_set_cookie_params(array_filter([
             'lifetime' => (int)self::vars('CONF.cookie.session.options.lifetime'),
             'path' => (string)self::vars('CONF.cookie.session.options.path'),
@@ -59,19 +71,7 @@ class F3App extends Prefab
                 ini_set('session.cookie_'.$option_, (string)$value_);
         }
         */
-    }
-
-    /**
-     * routing pre processor
-     * - csrf check for post and put requests
-     * - set / init very important variables
-     * - read request headers for later use
-     * - parse input streams to arrays
-     * @param Base $f3_ f3 framework instance
-     * @return void
-     */
-    static public function beforeroute(Base $f3_): void
-    {
+        
         self::$_session = new Session();
 
         self::vars('SESSION.test', '123');
