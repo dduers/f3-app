@@ -11,51 +11,74 @@ use Prefab;
 
 final class DatabaseService extends Prefab
 {
-    static private $_db;
+    static private $_service;
     static private array $_options = [];
 
     function __construct(array $options_)
     {
         self::$_options = $options_;
+        self::init();
+    }
+
+    /**
+     * init service instance
+     * @return void
+     */
+    static private function init(): void
+    {
+        if ((int)self::$_options['enable'] === 1) {
+
+            switch (strtolower(self::$_options['engine'])) {
+
+                default:
+                    self::$_service = NULL;
+                    break;
+
+                case 'sql':
+                    self::$_service = new SQL(
+                        self::$_options['type']
+                            . ':host=' . self::$_options['host']
+                            . ';port=' . self::$_options['port']
+                            . ';dbname=' . self::$_options['data'],
+                        self::$_options['user'],
+                        self::$_options['pass']
+                    );
+                    break;
+
+                case 'jig':
+                    self::$_service = new Jig(
+                        self::$_options['folder'] . self::$_options['data'] . '/',
+                        Jig::FORMAT_JSON
+                    );
+                    break;
+
+                case 'mongo':
+                    self::$_service = new Mongo(
+                        'mongodb://'
+                            . self::$_options['host']
+                            . ':'
+                            . self::$_options['port'],
+                        self::$_options['data'],
+                        NULL
+                    );
+                    break;
+            }
+        }
     }
 
     /**
      * get service instance
-     * @return SQL|Mongo|Jig
+     * @return SQL|Mongo|Jig|null
      */
     static public function getService()
     {
-        if ((int)self::$_options['enable'] === 1) {
-
-            if (!self::$_db)
-                switch (strtolower(self::$_options['engine'])) {
-
-                    case 'sql':
-                        self::$_db = new SQL(
-                            self::$_options['type']
-                                . ':host=' . self::$_options['host']
-                                . ';port=' . self::$_options['port']
-                                . ';dbname=' . self::$_options['data'],
-                            self::$_options['user'],
-                            self::$_options['pass']
-                        );
-                        break;
-
-                    case 'jig':
-                        self::$_db = new Jig(self::$_options['folder'] . self::$_options['data'] . '/', Jig::FORMAT_JSON);
-                        break;
-
-                    case 'mongo':
-                        self::$_db = new Mongo('mongodb://' . self::$_options['host'] . ':' . self::$_options['port'], self::$_options['data'], NULL);
-                        break;
-                }
-
-            return self::$_db;
-        }
-
-        return NULL;
+        return self::$_service;
     }
 
+    /**
+     * get service options
+     * @return array
+     */
     static public function getOptions(): array
     {
         return self::$_options;

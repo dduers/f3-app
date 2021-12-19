@@ -6,21 +6,15 @@ namespace Dduers\F3App;
 
 use Base;
 use Cache;
-use DB\SQL;
-use DB\Mongo;
-use DB\Jig;
-use SMTP;
 use Log;
 use Prefab;
 use Template;
 use Exception;
-use Session;
-use DB\SQL\Session as SQLSession;
-use DB\Mongo\Session as MongoSession;
-use DB\Jig\Session as JigSession;
+
 use Dduers\F3App\F3AppConfig;
 use Dduers\F3App\Service\DatabaseService;
 use Dduers\F3App\Service\MailService;
+use Dduers\F3App\Service\SessionService;
 
 /**
  * application base controller
@@ -36,6 +30,7 @@ class F3App extends Prefab
     static private $_log;
     static private $_session;
     static private array $_request_headers = [];
+    static private array $_service = [];
 
     /**
      * class constructor
@@ -47,9 +42,29 @@ class F3App extends Prefab
         self::$_config = F3AppConfig::instance();
         self::$_f3 = self::getFw();
         self::$_cache = self::getCache();
-        self::$_db = DatabaseService::instance(self::vars('CONF.database'))::getService();
-        self::$_smtp = MailService::instance(self::vars('CONF.mail'))::getService();
+        self::registerService('database', DatabaseService::instance(self::vars('CONF.database')));
+        self::registerService('mail', MailService::instance(self::vars('CONF.mail')));
         self::$_log = new Log(date('Y-m-d') . '.log');
+    }
+
+    /**
+     * register a service
+     * @param string $name_
+     * @param $instance_
+     */
+    static private function registerService(string $name_, $instance_)
+    {
+        self::$_service[$name_] = $instance_;
+    }
+
+    /**
+     * get a service instance by name
+     * @param string $name_
+     * @return mixed service instance
+     */
+    static public function getService($name_)
+    {
+        return isset(self::$_service[$name_]) ? self::$_service[$name_]::getService() : NULL;
     }
 
     /**
@@ -63,34 +78,7 @@ class F3App extends Prefab
      */
     static public function beforeroute(Base $f3_): void
     {
-        foreach (self::vars('CONF.cookie.session.options') as $option_ => $value_) {
-            if (isset($value_))
-                ini_set('session.cookie_' . $option_, (string)$value_);
-        }
-
-        switch (strtolower((string)$f3_->get('CONF.session.engine'))) {
-
-            case 'sql':
-                self::$_session = new SQLSession(self::$_db, $f3_->get('CONF.session.table'), TRUE, NULL, $f3_->get('CONF.session.key'));
-                break;
-
-            case 'mongo':
-                self::$_session = new MongoSession(self::$_db, $f3_->get('CONF.session.table'), NULL, $f3_->get('CONF.session.key'));
-                break;
-
-            case 'jig':
-                self::$_session = new JigSession(self::$_db, $f3_->get('CONF.session.table'), NULL, $f3_->get('CONF.session.key'));
-                break;
-
-            case 'cache':
-                $_cache = new Cache('folder=' . $f3_->get('TEMP') . $f3_->get('CONF.session.table') . '/');
-                self::$_session = new Session(NULL, $f3_->get('CONF.session.key'), $_cache);
-                break;
-
-            default:
-                self::$_session = new Session(NULL, $f3_->get('CONF.session.key'));
-                break;
-        }
+        self::registerService('session', SessionService::instance(self::vars('CONF.session')));
 
         if (!count(glob($f3_->get('LOCALES') . '*.ini')))
             throw new Exception('DICTIONARY check failed');
@@ -243,46 +231,6 @@ class F3App extends Prefab
     }
 
     /**
-     * send an email message through smtp
-     * @param array|string $to_ array of receiver email addresses or string with comma separated email addresses
-     * @param string $subject_ subject of message
-     * @param string $message_ either a string with the message text of a template filename
-     * @param string $from_addr_ (optional) email address to set for sender
-     * @param string $from_name_ (optional) name to set for sender
-     * @param array $attach_ (optional) array of filenames
-     * @return bool true on success, false on error
-     */
-    static public function mail($to_, string $subject_, string $message_, string $from_addr_ = NULL, string $from_name_ = NULL, array $attach_ = []): bool
-    {
-        if (!((int)self::$_f3->get('CONF.mail.enable') === 1))
-            return false;
-
-        self::$_smtp->set('Content-type', self::$_f3->get('CONF.mail.mime') . '; charset=' . self::$_f3->get('ENCODING'));
-
-        if (is_string($to_))
-            $to_ = explode(',', $to_);
-
-        $_toaddr = [];
-        foreach ($to_ as $_x)
-            $_toaddr[] = '<' . trim($_x) . '>';
-
-        $_toaddr = implode(', ', $_toaddr);
-        $from_addr_ = $from_addr_ ?: self::vars('CONF.mail.defaultsender.email');
-        $from_name_ = $from_name_ ?: (self::vars('CONF.mail.defaultsender.name') ?: self::vars('CONF.mail.defaultsender.email'));
-
-        self::$_smtp->set('To', $_toaddr);
-        self::$_smtp->set('From', '"' . $from_name_ . '" ' . '<' . $from_addr_ . '>');
-        self::$_smtp->set('Subject', $subject_);
-
-        foreach ($attach_ as $_x)
-            self::$_smtp->attach($_x);
-
-        if (file_exists(self::$_f3->get('UI') . 'mail/' . $message_ . '.html'))
-            return self::$_smtp->send(Template::instance()->render('mail/' . $message_ . '.html', self::$_f3->get('CONF.mail.mime')));
-        else return self::$_smtp->send($message_);
-    }
-
-    /**
      * creates a random string token and stores it to cache
      * for the next request
      * @return string
@@ -387,24 +335,6 @@ class F3App extends Prefab
             self::$_cache->load(TRUE);
         }
         return self::$_cache;
-    }
-
-    /**
-     * get database connection, must be enabled in config
-     * @return SQL|null
-     */
-    static public function getDb()
-    {
-        return self::$_db;
-    }
-
-    /**
-     * get smtp connection, must be enabled in config
-     * @return SMTP|null
-     */
-    static public function getSmtp()
-    {
-        return self::$_smtp;
     }
 
     /**
