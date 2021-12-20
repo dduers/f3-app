@@ -83,7 +83,7 @@ class F3App extends Prefab
         if ((int)self::$_f3->get('CONF.security.csrf.enable') === 1) {
             if (in_array($f3_->get('VERB'), self::$_f3->get('CONF.security.csrf.methods'))) {
                 $_token = $f3_->get('POST._token') ?? $f3_->get('PUT._token') ?? $f3_->get('GET._token');
-                if (!$_token || !self::vars_cache('_token') || $_token !== self::vars_cache('_token')) {
+                if (!$_token || !$f3_->get('SESSION.csrf') || $_token !== $f3_->get('SESSION.csrf')) {
                     $f3_->error(401);
                     return;
                 }
@@ -137,6 +137,8 @@ class F3App extends Prefab
                 echo Template::instance()->render('template.html');
                 break;
         }
+
+        $f3_->copy('CSRF', 'SESSION.csrf');
 
         return;
     }
