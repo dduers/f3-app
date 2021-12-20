@@ -1,0 +1,69 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Dduers\F3App\Service;
+
+use Prefab;
+use Log;
+
+final class LogService extends Prefab
+{
+    static private $_service;
+    static private array $_options = [];
+
+    function __construct(array $options_)
+    {
+        self::$_options = $options_;
+        self::init();
+    }
+
+    /**
+     * init service instance
+     * @return void
+     */
+    static private function init(): void
+    {
+        self::$_service = new Log(self::$_options['file']);
+    }
+
+    /**
+     * get service instance
+     * @return Log|null
+     */
+    static public function getService()
+    {
+        return self::$_service;
+    }
+
+    /**
+     * get service options
+     * @return array
+     */
+    static public function getOptions(): array
+    {
+        return self::$_options;
+    }
+
+    /**
+     * write log entries
+     * @param mixed $content_ the text to log
+     * @param string $format_ (optional) e.g. 'r' for rfc 2822 log format
+     * @return void
+     */
+    static public function write($content_, string $format_ = 'r'): void
+    {
+        if (is_string($content_))
+            self::$_service->write($content_, $format_);
+        else self::$_service->write(print_r($content_, true), $format_);
+    }
+
+    /**
+     * erase logfile
+     * @return void
+     */
+    static public function erase(): void
+    {
+        self::$_service->erase();
+    }
+}

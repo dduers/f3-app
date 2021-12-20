@@ -6,15 +6,14 @@ namespace Dduers\F3App;
 
 use Base;
 use Cache;
-use Log;
 use Prefab;
 use Template;
-use Exception;
 
 use Dduers\F3App\F3AppConfig;
 use Dduers\F3App\Service\DatabaseService;
 use Dduers\F3App\Service\MailService;
 use Dduers\F3App\Service\SessionService;
+use Dduers\F3App\Service\LogService;
 
 /**
  * application base controller
@@ -25,10 +24,6 @@ class F3App extends Prefab
     static private F3AppConfig $_config;
     static private Base $_f3;
     static private $_cache;
-    static private $_db;
-    static private $_smtp;
-    static private $_log;
-    static private $_session;
     static private array $_request_headers = [];
     static private array $_service = [];
 
@@ -44,28 +39,7 @@ class F3App extends Prefab
         self::$_cache = self::getCache();
         self::registerService('database', DatabaseService::class);
         self::registerService('mail', MailService::class);
-        self::$_log = new Log(date('Y-m-d') . '.log');
-    }
-
-    /**
-     * register a service
-     * @param string $name_
-     * @param object $instance_
-     * @return mixed service instance
-     */
-    static private function registerService(string $name_, $class_)
-    {
-        return self::$_service[$name_] = $class_::instance(self::vars('CONF.' . $name_));
-    }
-
-    /**
-     * get a service instance by name
-     * @param string $name_
-     * @return mixed service instance
-     */
-    static public function getService(string $name_)
-    {
-        return isset(self::$_service[$name_]) ? self::$_service[$name_]::getService() : NULL;
+        self::registerService('log', LogService::class);
     }
 
     /**
@@ -81,8 +55,10 @@ class F3App extends Prefab
     {
         self::registerService('session', SessionService::class);
 
+        /*
         if (!count(glob($f3_->get('LOCALES') . '*.ini')))
-            throw new Exception('DICTIONARY check failed');
+            throw new \Exception('DICTIONARY check failed');
+        */
 
         $f3_->set('PARAMS.vers', $f3_->get('PARAMS.vers') ?: 'v1');
         $f3_->set('PARAMS.ctrl', $f3_->get('PARAMS.ctrl') ?: 'home');
@@ -219,33 +195,6 @@ class F3App extends Prefab
     }
 
     /**
-     * write log entries
-     * @param string $text_ the text to log
-     * @param string $format_ (optional) e.g. 'r' for rfc 2822 log format
-     * @return void
-     */
-    static public function logs($text_, string $format_ = 'r'): void
-    {
-        if (is_string($text_))
-            self::$_log->write($text_, $format_);
-        else self::$_log->write(print_r($text_, true), $format_);
-    }
-
-    /**
-     * creates a random string token and stores it to cache
-     * for the next request
-     * @return string
-     */
-    static protected function createToken(): string
-    {
-        if ((int)self::$_f3->get('CONF.security.csrf.enable') !== 1)
-            return '';
-        $_token = bin2hex(random_bytes(4));
-        self::vars_cache('_token', $_token);
-        return $_token;
-    }
-
-    /**
      * parse input data
      * @return void
      */
@@ -318,6 +267,27 @@ class F3App extends Prefab
         if (strpos($_auth_header, $_auth_header_prefix) === 0)
             return substr($_auth_header, strlen($_auth_header_prefix));
         return '';
+    }
+
+    /**
+     * register a service
+     * @param string $name_
+     * @param object $instance_
+     * @return mixed service instance
+     */
+    static private function registerService(string $name_, $class_)
+    {
+        return self::$_service[$name_] = $class_::instance(self::vars('CONF.' . $name_));
+    }
+
+    /**
+     * get a service instance by name
+     * @param string $name_
+     * @return mixed service instance
+     */
+    static public function getService(string $name_)
+    {
+        return isset(self::$_service[$name_]) ? self::$_service[$name_]::getService() : NULL;
     }
 
     /**
