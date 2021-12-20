@@ -10,7 +10,6 @@ use Session;
 use DB\SQL\Session as SQLSession;
 use DB\Mongo\Session as MongoSession;
 use DB\Jig\Session as JigSession;
-use Dduers\F3App\Interface\ServiceInterface;
 
 final class SessionService extends Prefab implements ServiceInterface
 {

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Dduers\F3App\Service;
 
 use Base;
-use Dduers\F3App\Interface\ServiceInterface;
 use Prefab;
 use SMTP;
 use Template;

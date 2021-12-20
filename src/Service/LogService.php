@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Dduers\F3App\Service;
 
-use Dduers\F3App\ServiceInterface;
 use Prefab;
 use Log;
 
