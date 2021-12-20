@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Dduers\F3App\Service;
 
+use Dduers\F3App\ServiceInterface;
 use Prefab;
 use Log;
 
-final class LogService extends Prefab
+final class LogService extends Prefab implements ServiceInterface
 {
     static private $_service;
     static private array $_options = [];
@@ -22,7 +23,7 @@ final class LogService extends Prefab
      * init service instance
      * @return void
      */
-    static private function init(): void
+    static function init(): void
     {
         self::$_service = new Log(self::$_options['file']);
     }
@@ -31,7 +32,7 @@ final class LogService extends Prefab
      * get service instance
      * @return Log|null
      */
-    static public function getService()
+    static function getService()
     {
         return self::$_service;
     }
@@ -51,7 +52,7 @@ final class LogService extends Prefab
      * @param string $format_ (optional) e.g. 'r' for rfc 2822 log format
      * @return void
      */
-    static public function write($content_, string $format_ = 'r'): void
+    static function write($content_, string $format_ = 'r'): void
     {
         if (is_string($content_))
             self::$_service->write($content_, $format_);
@@ -62,7 +63,7 @@ final class LogService extends Prefab
      * erase logfile
      * @return void
      */
-    static public function erase(): void
+    static function erase(): void
     {
         self::$_service->erase();
     }

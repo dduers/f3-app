@@ -10,9 +10,9 @@ use Session;
 use DB\SQL\Session as SQLSession;
 use DB\Mongo\Session as MongoSession;
 use DB\Jig\Session as JigSession;
+use Dduers\F3App\ServiceInterface;
 
-
-final class SessionService extends Prefab
+final class SessionService extends Prefab implements ServiceInterface
 {
     static private $_service;
     static private array $_options = [];
@@ -29,7 +29,7 @@ final class SessionService extends Prefab
      * init service instance
      * @return void
      */
-    static private function init(): void
+    static function init(): void
     {
         foreach (self::$_options['cookie']['options'] as $option_ => $value_) {
             if (isset($value_))
@@ -71,7 +71,7 @@ final class SessionService extends Prefab
      * get service instance
      * @return Session|SQLSession|MongoSession|JigSession
      */
-    static public function getService()
+    static function getService()
     {
         return self::$_service;
     }
@@ -80,7 +80,7 @@ final class SessionService extends Prefab
      * get service options
      * @return array
      */
-    static public function getOptions(): array
+    static function getOptions(): array
     {
         return self::$_options;
     }

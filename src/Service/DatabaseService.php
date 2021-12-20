@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Dduers\F3App\Service;
 
+use Dduers\F3App\ServiceInterface;
 use DB\Jig;
 use DB\Mongo;
 use DB\SQL;
 use Prefab;
 
-final class DatabaseService extends Prefab
+final class DatabaseService extends Prefab implements ServiceInterface
 {
     static private $_service;
     static private array $_options = [];
@@ -24,7 +25,7 @@ final class DatabaseService extends Prefab
      * init service instance
      * @return void
      */
-    static private function init(): void
+    static function init(): void
     {
         if ((int)self::$_options['enable'] === 1) {
 
@@ -70,7 +71,7 @@ final class DatabaseService extends Prefab
      * get service instance
      * @return SQL|Mongo|Jig|null
      */
-    static public function getService()
+    static function getService()
     {
         return self::$_service;
     }
@@ -79,7 +80,7 @@ final class DatabaseService extends Prefab
      * get service options
      * @return array
      */
-    static public function getOptions(): array
+    static function getOptions(): array
     {
         return self::$_options;
     }
