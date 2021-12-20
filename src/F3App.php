@@ -42,19 +42,20 @@ class F3App extends Prefab
         self::$_config = F3AppConfig::instance();
         self::$_f3 = self::getFw();
         self::$_cache = self::getCache();
-        self::registerService('database', DatabaseService::instance(self::vars('CONF.database')));
-        self::registerService('mail', MailService::instance(self::vars('CONF.mail')));
+        self::registerService('database', DatabaseService::class);
+        self::registerService('mail', MailService::class);
         self::$_log = new Log(date('Y-m-d') . '.log');
     }
 
     /**
      * register a service
      * @param string $name_
-     * @param $instance_
+     * @param object $instance_
+     * @return mixed service instance
      */
-    static private function registerService(string $name_, $instance_)
+    static private function registerService(string $name_, $class_)
     {
-        self::$_service[$name_] = $instance_;
+        return self::$_service[$name_] = $class_::instance(self::vars('CONF.' . $name_));
     }
 
     /**
@@ -62,7 +63,7 @@ class F3App extends Prefab
      * @param string $name_
      * @return mixed service instance
      */
-    static public function getService($name_)
+    static public function getService(string $name_)
     {
         return isset(self::$_service[$name_]) ? self::$_service[$name_]::getService() : NULL;
     }
@@ -78,7 +79,7 @@ class F3App extends Prefab
      */
     static public function beforeroute(Base $f3_): void
     {
-        self::registerService('session', SessionService::instance(self::vars('CONF.session')));
+        self::registerService('session', SessionService::class);
 
         if (!count(glob($f3_->get('LOCALES') . '*.ini')))
             throw new Exception('DICTIONARY check failed');
