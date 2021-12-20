@@ -1,6 +1,6 @@
 <?php
 
-namespace Dduers\F3App;
+namespace Dduers\F3App\Interface;
 
 interface ServiceInterface
 {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Dduers\F3App\Service;
 
-use Dduers\F3App\ServiceInterface;
+use Dduers\F3App\Interface\ServiceInterface;
 use DB\Jig;
 use DB\Mongo;
 use DB\SQL;
