@@ -6,6 +6,7 @@ namespace Dduers\F3App\Service;
 
 use Prefab;
 use Log;
+use Dduers\F3App\Iface\ServiceInterface;
 
 final class LogService extends Prefab implements ServiceInterface
 {

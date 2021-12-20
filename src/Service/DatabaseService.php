@@ -8,6 +8,7 @@ use DB\Jig;
 use DB\Mongo;
 use DB\SQL;
 use Prefab;
+use Dduers\F3App\Iface\ServiceInterface;
 
 final class DatabaseService extends Prefab implements ServiceInterface
 {

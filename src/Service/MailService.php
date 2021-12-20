@@ -8,6 +8,7 @@ use Base;
 use Prefab;
 use SMTP;
 use Template;
+use Dduers\F3App\Iface\ServiceInterface;
 
 final class MailService extends Prefab implements ServiceInterface
 {
