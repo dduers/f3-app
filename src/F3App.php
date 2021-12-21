@@ -34,12 +34,8 @@ class F3App extends Prefab
     {
         self::$_f3 = Base::instance();
         self::register('config', ConfigService::class, ['path' => $config_path_]);
-        self::register('cache', CacheService::class, self::vars('CONF.cache'));
-        self::register('database', DatabaseService::class, self::vars('CONF.database'));
-        self::register('mail', MailService::class, self::vars('CONF.mail'));
-        self::register('log', LogService::class, self::vars('CONF.log'));
-        self::register('input', InputService::class, self::vars('CONF.input'));
-        self::register('session', SessionService::class, self::vars('CONF.session'));
+        foreach (self::vars('CONF.services') as $name_ => $class_)
+            self::register($name_, $class_, self::vars('CONF.'.$name_));
     }
 
     /**
@@ -157,7 +153,7 @@ class F3App extends Prefab
         }
 
         if ((int)$f3_->get('CONF.csrf.enable') === 1)
-            self::service('session')::copyTokenToSession();
+            self::service('session')::storeToken();
 
         return;
     }

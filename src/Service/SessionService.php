@@ -84,7 +84,7 @@ final class SessionService extends Prefab implements ServiceInterface
     }
 
     /**
-     * create random token
+     * create random string token
      * @return string
      */
     static private function createToken(): string
@@ -93,16 +93,7 @@ final class SessionService extends Prefab implements ServiceInterface
     }
 
     /**
-     * get current session token
-     * @return string
-     */
-    static function getToken(): string
-    {
-        return self::$_token;
-    }
-
-    /**
-     * get token from the session (previous request)
+     * get token stored on the server (previous request)
      * @return string
      */
     static private function getServerToken(): string
@@ -117,6 +108,15 @@ final class SessionService extends Prefab implements ServiceInterface
     static private function getClientToken(): string
     {
         return (string)(self::$_f3->get('POST.' . self::$_options['key']) ?? self::$_f3->get('PUT.' . self::$_options['key']) ?? self::$_f3->get('GET.' . self::$_options['key']) ?? '');
+    }
+
+    /**
+     * get current session token
+     * @return string
+     */
+    static function getToken(): string
+    {
+        return self::$_token;
     }
 
     /**
@@ -135,7 +135,7 @@ final class SessionService extends Prefab implements ServiceInterface
     /**
      * copy token to session
      */
-    static function copyTokenToSession(): void
+    static function storeToken(): void
     {
         self::$_f3->set('SESSION.' . self::$_options['key'], self::$_token);
     }
