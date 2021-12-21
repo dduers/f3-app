@@ -12,12 +12,23 @@ use DB\SQL;
 
 final class DatabaseService extends Prefab implements ServiceInterface
 {
+    private const DEFAULT_OPTIONS = [
+        'enable' => 0,
+        'engine' => 'sql',
+        'type' => 'mysql',
+        'host' => 'localhost',
+        'port' => 3306,
+        'data' => '',
+        'user' => '',
+        'pass' => '',
+        'folder' => '',
+    ];
     static private $_service;
     static private array $_options = [];
 
     function __construct(array $options_)
     {
-        self::$_options = $options_;
+        self::$_options = array_merge(self::DEFAULT_OPTIONS, $options_);
 
         if ((int)(self::$_options['enable'] ?? 0) === 1) {
 

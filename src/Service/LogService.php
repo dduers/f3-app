@@ -10,12 +10,15 @@ use Dduers\F3App\Iface\ServiceInterface;
 
 final class LogService extends Prefab implements ServiceInterface
 {
+    private const DEFAULT_OPTIONS = [
+        'file' => 'log.txt'
+    ];
     static private $_service;
     static private array $_options = [];
 
     function __construct(array $options_)
     {
-        self::$_options = $options_;
+        self::$_options = array_merge(self::DEFAULT_OPTIONS, $options_);
         self::$_service = new Log(self::$_options['file']);
     }
 

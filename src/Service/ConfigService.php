@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace Dduers\F3App\Service;
 
-use Base;
 use Dduers\F3App\Iface\ServiceInterface;
 use Prefab;
+use Base;
 
 /**
  * app config loader and defaults
  */
-class ConfigService extends Prefab implements ServiceInterface
+final class ConfigService extends Prefab implements ServiceInterface
 {
-    public const F3APP_DEFAULT_CONFIG_DIR = '../config/';
+    private const DEFAULT_OPTIONS = [
+        'path' => '../config/'
+    ];
     static private Base $_f3;
     static private array $_options = [];
 
@@ -25,13 +27,16 @@ class ConfigService extends Prefab implements ServiceInterface
     function __construct(array $options_)
     {
         self::$_f3 = Base::instance();
-        self::$_options = $options_;
+        self::$_options = array_merge(self::DEFAULT_OPTIONS, $options_);
 
         self::$_f3->config(__DIR__ . '/../Config/default.ini');
 
-        $_config_path = (self::$_options['path'] ?? '') ?: self::F3APP_DEFAULT_CONFIG_DIR;
-        foreach (glob($_config_path . '*.ini') as $_inifile)
-            self::$_f3->config($_inifile);
+        $_config_path = (self::$_options['path'] ?? '') ?: self::DEFAULT_OPTIONS['path'];
+        $_config_files = glob($_config_path . '*.ini');
+
+        if ($_config_files !== false)
+            foreach ($_config_files as $_inifile)
+                self::$_f3->config($_inifile);
     }
 
     /**
