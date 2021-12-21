@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Dduers\F3App;
 
 use Base;
-use Cache;
 use Prefab;
 use Template;
 
@@ -15,6 +14,7 @@ use Dduers\F3App\Service\InputService;
 use Dduers\F3App\Service\MailService;
 use Dduers\F3App\Service\SessionService;
 use Dduers\F3App\Service\LogService;
+use Dduers\F3App\Service\CacheService;
 
 /**
  * application base controller
@@ -23,7 +23,7 @@ use Dduers\F3App\Service\LogService;
 class F3App extends Prefab
 {
     static private Base $_f3;
-    static private $_cache;
+    //static private $_cache;
     static private array $_service = [];
 
     /**
@@ -33,32 +33,25 @@ class F3App extends Prefab
      */
     function __construct(string $config_path_ = '../config/')
     {
-        self::registerService('config', ConfigService::class, ['path' => $config_path_]);
-        self::$_f3 = self::getFw();
-        self::$_cache = self::getCache();
-        self::registerService('database', DatabaseService::class, self::vars('CONF.database'));
-        self::registerService('mail', MailService::class, self::vars('CONF.mail'));
-        self::registerService('log', LogService::class, self::vars('CONF.log'));
-        self::registerService('input', InputService::class, self::vars('CONF.input'));
-        self::registerService('session', SessionService::class, self::vars('CONF.session'));
+        self::$_f3 = Base::instance();
+        self::register('config', ConfigService::class, ['path' => $config_path_]);
+        self::register('cache', CacheService::class, self::vars('CONF.cache'));
+        self::register('database', DatabaseService::class, self::vars('CONF.database'));
+        self::register('mail', MailService::class, self::vars('CONF.mail'));
+        self::register('log', LogService::class, self::vars('CONF.log'));
+        self::register('input', InputService::class, self::vars('CONF.input'));
+        self::register('session', SessionService::class, self::vars('CONF.session'));
     }
 
     /**
      * routing pre processor
-     * - csrf check for post and put requests
-     * - set / init very important variables
-     * - read request headers for later use
-     * - parse input streams to arrays
+     * - init important variables
+     * - csrf check
      * @param Base $f3_ f3 framework instance
      * @return void
      */
     static function beforeroute(Base $f3_): void
     {
-        /*
-        if (!count(glob($f3_->get('LOCALES') . '*.ini')))
-            throw new \Exception('DICTIONARY check failed');
-        */
-
         $f3_->set('PARAMS.vers', $f3_->get('PARAMS.vers') ?: 'v1');
         $f3_->set('PARAMS.ctrl', $f3_->get('PARAMS.ctrl') ?: 'home');
         $f3_->set('PARAMS.0', '/' . $f3_->get('PARAMS.ctrl'));
@@ -75,8 +68,8 @@ class F3App extends Prefab
         $f3_->set('LANGUAGE', $f3_->get('PARAMS.lang'));
 
         if (
-            (int)self::$_f3->get('CONF.csrf.enable') === 1
-            && in_array(self::vars('VERB'), self::vars('CONF.csrf.methods'))
+            (int)$f3_->get('CONF.csrf.enable') === 1 
+            && in_array($f3_->get('VERB'), $f3_->get('CONF.csrf.methods'))
             && !self::checkCsrfToken()
         ) {
             $f3_->error(401);
@@ -87,21 +80,9 @@ class F3App extends Prefab
     }
 
     /**
-     * check csrf token
-     * @return bool
-     */
-    static private function checkCsrfToken(): bool
-    {
-        $_token = self::vars('POST._token') ?? self::vars('PUT._token') ?? self::vars('GET._token') ?? '';
-        if (!$_token || !self::vars('SESSION.csrf') || $_token !== self::vars('SESSION.csrf'))
-            return false;
-        return true;
-    }
-
-    /**
      * routing post processor
-     * - set response headers from RESPONSE.header
-     * - output RESPONSE.data, recarding header RESPONSE.header.mime 
+     * - set response headers
+     * - output response data
      * @param Base $f3_ f3 framework instance
      * @return void
      */
@@ -176,7 +157,7 @@ class F3App extends Prefab
                 break;
         }
 
-        if ((int)self::$_f3->get('CONF.csrf.enable') === 1)
+        if ((int)$f3_->get('CONF.csrf.enable') === 1)
             $f3_->copy('CSRF', 'SESSION.csrf');
 
         return;
@@ -228,20 +209,13 @@ class F3App extends Prefab
         else return (self::$_f3->get($name_));
     }
 
-    static function vars_cache(string $name_, $value_ = NULL)
-    {
-        if (isset($value_))
-            return (self::$_cache->set($name_, $value_));
-        else return (self::$_cache->get($name_));
-    }
-
     /**
      * register a service
      * @param string $name_
      * @param object $instance_
      * @return mixed service instance
      */
-    static private function registerService(string $name_, $class_, array $options_ = [])
+    static function register(string $name_, $class_, array $options_ = [])
     {
         return self::$_service[$name_] = $class_::instance($options_);
     }
@@ -262,16 +236,19 @@ class F3App extends Prefab
      */
     static function getFw(): Base
     {
-        return Base::instance();
+        return self::$_f3;
     }
 
-    static function getCache()
+    /**
+     * check csrf token
+     * @return bool
+     */
+    static private function checkCsrfToken(): bool
     {
-        if (!self::$_cache) {
-            self::$_cache = Cache::instance();
-            self::$_cache->load(TRUE);
-        }
-        return self::$_cache;
+        $_token = self::vars('POST._token') ?? self::vars('PUT._token') ?? self::vars('GET._token') ?? '';
+        if (!$_token || !self::vars('SESSION.csrf') || $_token !== self::vars('SESSION.csrf'))
+            return false;
+        return true;
     }
 
     /**
