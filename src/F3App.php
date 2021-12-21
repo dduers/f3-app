@@ -35,7 +35,7 @@ class F3App extends Prefab
     {
         self::register('config', ConfigService::class, ['path' => $config_path_]);
         self::$_f3 = Base::instance();
-        //self::register('cache', CacheService::class, self::vars('CONF.cache'));
+        self::register('cache', CacheService::class, self::vars('CONF.cache'));
         self::register('database', DatabaseService::class, self::vars('CONF.database'));
         self::register('mail', MailService::class, self::vars('CONF.mail'));
         self::register('log', LogService::class, self::vars('CONF.log'));
@@ -246,6 +246,14 @@ class F3App extends Prefab
     static private function checkCsrfToken(): bool
     {
         $_token = self::vars('POST._token') ?? self::vars('PUT._token') ?? self::vars('GET._token') ?? '';
+        $_logger = self::service('log');
+        $_logger->write([
+            'post' => self::vars('POST._token'),
+            'put' => self::vars('PUT._token'),
+            'session' => self::vars('SESSION.csrf'),
+            'token' => $_token
+        ]);
+        
         if (!$_token || !self::vars('SESSION.csrf') || $_token !== self::vars('SESSION.csrf'))
             return false;
         return true;
