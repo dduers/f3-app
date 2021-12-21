@@ -14,6 +14,7 @@ use Dduers\F3App\Service\DatabaseService;
 use Dduers\F3App\Service\MailService;
 use Dduers\F3App\Service\SessionService;
 use Dduers\F3App\Service\LogService;
+use Dduers\F3App\Service\SanitizerService;
 
 /**
  * application base controller
@@ -40,6 +41,7 @@ class F3App extends Prefab
         self::registerService('database', DatabaseService::class);
         self::registerService('mail', MailService::class);
         self::registerService('log', LogService::class);
+        self::registerService('sanitizer', SanitizerService::class);
     }
 
     /**
@@ -78,7 +80,7 @@ class F3App extends Prefab
         foreach (getallheaders() as $header_ => $value_)
             self::$_request_headers[$header_] = $value_;
 
-        self::parseInputData();
+        
 
         if ((int)self::$_f3->get('CONF.security.csrf.enable') === 1) {
             if (in_array($f3_->get('VERB'), self::$_f3->get('CONF.security.csrf.methods'))) {
@@ -90,10 +92,9 @@ class F3App extends Prefab
             }
         }
 
-        self::sanitizeInputData();
-
         return;
     }
+
 
     /**
      * routing post processor
@@ -227,68 +228,6 @@ class F3App extends Prefab
         if (isset($value_))
             return (self::$_cache->set($name_, $value_));
         else return (self::$_cache->get($name_));
-    }
-
-    /**
-     * parse input data
-     * @return void
-     */
-    static private function parseInputData(): void
-    {
-        switch (self::vars('VERB')) {
-            case 'POST':
-                switch (self::$_request_headers['Content-Type'] ?? '') {
-                    default:
-                    case 'application/json':
-                        self::vars('POST', json_decode(file_get_contents("php://input"), true));
-                        break;
-                }
-                break;
-            case 'PUT':
-                switch (self::$_request_headers['Content-Type'] ?? '') {
-                    default:
-                    case 'application/json':
-                        self::vars('PUT', json_decode(file_get_contents("php://input"), true));
-                        break;
-                }
-                /*
-                $_body = file_get_contents("php://input");
-                parse_str($_body, $_parsed);
-                self::vars('PUT', $_parsed);
-                */
-        }
-    }
-
-    /**
-     * sanitize input data
-     * @return void
-     */
-    static private function sanitizeInputData(): void
-    {
-        if ((int)self::vars('CONF.security.xss.enable') !== 1)
-            return;
-
-        switch (self::vars('VERB')) {
-            case 'POST':
-                $_data = self::vars('POST');
-                foreach ($_data as $key_ => $value_) {
-                    if (in_array($key_, self::vars('CONF.security.xss.exclude')))
-                        continue;
-                    $_data[$key_] = self::$_f3->clean($value_);
-                }
-                self::vars('POST', array_filter($_data));
-                break;
-            case 'PUT':
-                $_data = self::vars('PUT');
-                foreach ($_data as $key_ => $value_) {
-                    if (in_array($key_, self::vars('CONF.security.xss.exclude')))
-                        continue;
-                    $_data[$key_] = self::$_f3->clean($value_);
-                }
-                self::vars('PUT', array_filter($_data));
-                break;
-        }
-        return;
     }
 
     /**
