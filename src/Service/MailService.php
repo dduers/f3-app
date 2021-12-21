@@ -27,7 +27,7 @@ final class MailService extends Prefab implements ServiceInterface
      * init service instance
      * @return void
      */
-    static function init(): void
+    static private function init(): void
     {
         if ((int)self::$_options['enable'] === 1) {
             if (!self::$_service)

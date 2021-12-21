@@ -23,7 +23,7 @@ final class LogService extends Prefab implements ServiceInterface
      * init service instance
      * @return void
      */
-    static function init(): void
+    static private function init(): void
     {
         self::$_service = new Log(self::$_options['file']);
     }

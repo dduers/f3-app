@@ -29,7 +29,7 @@ final class SessionService extends Prefab implements ServiceInterface
      * init service instance
      * @return void
      */
-    static function init(): void
+    static private function init(): void
     {
         foreach (self::$_options['cookie']['options'] as $option_ => $value_) {
             if (isset($value_))
