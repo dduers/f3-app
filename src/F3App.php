@@ -43,7 +43,7 @@ class F3App extends Prefab
         self::register('input', InputService::class, self::vars('CONF.input'));
         //self::register('session', SessionService::class, self::vars('CONF.session'));
         new Session(NULL, 'CSRF');
-        self::vars('SESSION.text', 'text');
+        
     }
 
     /**
@@ -55,6 +55,7 @@ class F3App extends Prefab
      */
     static function beforeroute(Base $f3_): void
     {
+        self::vars('SESSION.text', 'text');
         $f3_->set('PARAMS.vers', $f3_->get('PARAMS.vers') ?: 'v1');
         $f3_->set('PARAMS.ctrl', $f3_->get('PARAMS.ctrl') ?: 'home');
         $f3_->set('PARAMS.0', '/' . $f3_->get('PARAMS.ctrl'));
