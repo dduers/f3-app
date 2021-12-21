@@ -8,13 +8,7 @@ use Base;
 use Prefab;
 use Template;
 
-use Dduers\F3App\Service\ConfigService;
-use Dduers\F3App\Service\DatabaseService;
-use Dduers\F3App\Service\InputService;
-use Dduers\F3App\Service\MailService;
-use Dduers\F3App\Service\SessionService;
-use Dduers\F3App\Service\LogService;
-use Dduers\F3App\Service\CacheService;
+use Dduers\F3App\Service;
 
 /**
  * application base controller
@@ -33,7 +27,7 @@ class F3App extends Prefab
     function __construct(string $config_path_ = '../config/')
     {
         self::$_f3 = Base::instance();
-        self::register('config', 'ConfigService', ['path' => $config_path_]);
+        self::register('config', 'Dduers\F3App\Service\ConfigService', ['path' => $config_path_]);
         foreach (self::vars('CONF.services') as $name_ => $class_)
             self::register($name_, $class_, self::vars('CONF.'.$name_));
     }
