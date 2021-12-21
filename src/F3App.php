@@ -104,26 +104,60 @@ class F3App extends Prefab
      */
     static public function afterroute(Base $f3_): void
     {
-        if ($_SERVER['HTTP_ORIGIN'] ?? '')
-            if (
-                is_array($f3_->get('CONF.header.alloworigin'))
-                && in_array($_SERVER['HTTP_ORIGIN'], $f3_->get('CONF.header.alloworigin'))
-            ) header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
-            elseif (
-                is_string($f3_->get('CONF.header.alloworigin'))
-                && $_SERVER['HTTP_ORIGIN'] === $f3_->get('CONF.header.alloworigin')
-            ) header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
+        if ($_SERVER['HTTP_ORIGIN'] ?? '') {
+            if (is_array($f3_->get('CONF.header.accesscontrolalloworigin')) && in_array($_SERVER['HTTP_ORIGIN'], $f3_->get('CONF.header.accesscontrolalloworigin')))
+                header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
+            elseif (is_string($f3_->get('CONF.header.accesscontrolalloworigin')) && $_SERVER['HTTP_ORIGIN'] === $f3_->get('CONF.header.accesscontrolalloworigin'))
+                header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
+        }
 
-        if ($f3_->get('RESPONSE.header.methods'))
-            header('Access-Control-Allow-Methods: ' . $f3_->get('RESPONSE.header.methods'));
+        $_t = '';
+        if (is_array($f3_->get('RESPONSE.header.accesscontrolallowmethods')))
+            $_t = implode(',', $f3_->get('RESPONSE.header.accesscontrolallowmethods'));
+        elseif (is_string($f3_->get('RESPONSE.header.accesscontrolallowmethods')))
+            $_t = $f3_->get('RESPONSE.header.accesscontrolallowmethods');
+        if ($_t === '') {
+            if (is_array($f3_->get('CONF.header.accesscontrolallowmethods')))
+                $_t = implode(',', $f3_->get('CONF.header.accesscontrolallowmethods'));
+            elseif (is_string($f3_->get('CONF.header.accesscontrolallowmethods')))
+                $_t = $f3_->get('CONF.header.accesscontrolallowmethods');
+        }
+        if ($_t)
+            header('Access-Control-Allow-Methods: ' . $_t);
 
-        if ($_allow_header = strtolower(implode(',', $f3_->get('CONF.header.allowheader') ?? [])))
-            header('Access-Control-Allow-Headers: ' . $_allow_header);
+        $_t = '';
+        if (is_array($f3_->get('RESPONSE.header.accesscontrolallowheaders')))
+            $_t = implode(',', $f3_->get('RESPONSE.header.accesscontrolallowheaders'));
+        elseif (is_string($f3_->get('RESPONSE.header.accesscontrolallowheaders')))
+            $_t = $f3_->get('RESPONSE.header.accesscontrolallowheaders');
+        if ($_t === '') {
+            if (is_array($f3_->get('CONF.header.accesscontrolallowheaders')))
+                $_t = implode(',', $f3_->get('CONF.header.accesscontrolallowheaders'));
+            elseif (is_string($f3_->get('CONF.header.accesscontrolallowheaders')))
+                $_t = $f3_->get('CONF.header.accesscontrolallowheaders');
+        }
+        if ($_t)
+            header('Access-Control-Allow-Headers: ' . $_t);
 
-        header('Access-Control-Allow-Credentials: true');
+        $_t = false;
+        if ($f3_->get('CONF.header.accesscontrolallowcredentials') === true)
+            $_t = true;
+        if ($f3_->get('RESPONSE.header.accesscontrolallowcredentials') === true)
+            $_t = true;
+        elseif ($f3_->get('RESPONSE.header.accesscontrolallowcredentials') === false)
+            $_t = false;
+        if ($_t === true)
+            header('Access-Control-Allow-Credentials: true');
 
-        if ($_content_type = strtolower($f3_->get('CONF.header.contenttype')))
-            header('Content-Type: ' . $_content_type);
+        $_content_type = '';
+        if ($f3_->get('RESPONSE.header.contenttype'))
+            $_content_type = $f3_->get('RESPONSE.header.contenttype');
+        if ($_content_type === '') {
+            if ($f3_->get('CONF.header.contenttype'))
+                $_content_type = implode(',', $f3_->get('CONF.header.contenttype'));
+        }
+        if ($_content_type)
+            header('Content-Type: ' . strtolower($_content_type));
 
         if ($f3_->get('RESPONSE.filename'))
             header('Content-Disposition: attachment; filename="' . $f3_->get('RESPONSE.filename') . '"');
@@ -139,7 +173,6 @@ class F3App extends Prefab
         }
 
         $f3_->copy('CSRF', 'SESSION.csrf');
-
         return;
     }
 
