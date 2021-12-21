@@ -157,7 +157,7 @@ class F3App extends Prefab
         }
 
         if ((int)$f3_->get('CONF.csrf.enable') === 1)
-            $f3_->set('SESSION.csrf', self::service('session')::getToken());
+            self::service('session')::copyTokenToSession();
 
         return;
     }
@@ -244,8 +244,9 @@ class F3App extends Prefab
      */
     static private function checkCsrfToken(): bool
     {
-        $_token = self::vars('POST._token') ?? self::vars('PUT._token') ?? self::vars('GET._token') ?? '';
-        if (!$_token || !self::vars('SESSION.csrf') || $_token !== self::vars('SESSION.csrf'))
+        $_token_server = self::service('session')::getTokenFromSession();
+        $_token_client = self::vars('POST._token') ?? self::vars('PUT._token') ?? self::vars('GET._token') ?? '';
+        if (!$_token_client || !$_token_server || $_token_client !== $_token_server)
             return false;
         return true;
     }

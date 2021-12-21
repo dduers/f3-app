@@ -102,6 +102,23 @@ final class SessionService extends Prefab implements ServiceInterface
     }
 
     /**
+     * get token from the session (previous request)
+     * @return string
+     */
+    static function getTokenFromSession(): string
+    {
+        return self::$_f3->get('SESSION.' . self::$_options['key']);
+    }
+
+    /**
+     * copy token to session
+     */
+    static function copyTokenToSession(): void
+    {
+        self::$_f3->set('SESSION.' . self::$_options['key'], self::$_token);
+    }
+
+    /**
      * get service instance
      * @return Session|SQLSession|MongoSession|JigSession
      */
