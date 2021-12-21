@@ -51,7 +51,7 @@ final class DatabaseService extends Prefab implements ServiceInterface
                             . (self::$_options['host'] ?? '')
                             . ':'
                             . (self::$_options['port'] ?? ''),
-                            (self::$_options['data'] ?? ''),
+                        (self::$_options['data'] ?? ''),
                         NULL
                     );
                     break;
