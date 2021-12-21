@@ -33,14 +33,14 @@ class F3App extends Prefab
      */
     function __construct(string $config_path_ = '../config/')
     {
-        self::register('config', ConfigService::class, ['path' => $config_path_]);
+        //self::register('config', ConfigService::class, ['path' => $config_path_]);
         self::$_f3 = Base::instance();
         self::register('cache', CacheService::class, self::vars('CONF.cache'));
         self::register('database', DatabaseService::class, self::vars('CONF.database'));
         self::register('mail', MailService::class, self::vars('CONF.mail'));
         self::register('log', LogService::class, self::vars('CONF.log'));
         self::register('input', InputService::class, self::vars('CONF.input'));
-        
+        self::register('session', SessionService::class, self::vars('CONF.session'));
     }
 
     /**
@@ -52,8 +52,6 @@ class F3App extends Prefab
      */
     static function beforeroute(Base $f3_): void
     {
-        self::register('session', SessionService::class, self::vars('CONF.session'));
-        
         $f3_->set('PARAMS.vers', $f3_->get('PARAMS.vers') ?: 'v1');
         $f3_->set('PARAMS.ctrl', $f3_->get('PARAMS.ctrl') ?: 'home');
         $f3_->set('PARAMS.0', '/' . $f3_->get('PARAMS.ctrl'));
