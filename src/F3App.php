@@ -8,8 +8,6 @@ use Base;
 use Prefab;
 use Template;
 
-use Dduers\F3App\Service;
-
 /**
  * application base controller
  * - route controllers should extend this
@@ -29,7 +27,7 @@ class F3App extends Prefab
         self::$_f3 = Base::instance();
         self::register('config', 'Dduers\F3App\Service\ConfigService', ['path' => $config_path_]);
         foreach (self::vars('CONF.services') as $name_ => $class_)
-            self::register($name_, $class_, self::vars('CONF.'.$name_));
+            self::register($name_, $class_, self::vars('CONF.' . $name_));
     }
 
     /**
@@ -171,6 +169,12 @@ class F3App extends Prefab
         ]);
 
         return true;
+    }
+
+    static function error(int $code_): void
+    {
+        self::$_f3->error($code_);
+        return;
     }
 
     /**
