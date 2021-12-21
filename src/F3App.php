@@ -154,7 +154,7 @@ class F3App extends Prefab
             $_content_type = $f3_->get('RESPONSE.header.contenttype');
         if ($_content_type === '') {
             if ($f3_->get('CONF.header.contenttype'))
-                $_content_type = implode(',', $f3_->get('CONF.header.contenttype'));
+                $_content_type = $f3_->get('CONF.header.contenttype');
         }
         if ($_content_type)
             header('Content-Type: ' . strtolower($_content_type));
