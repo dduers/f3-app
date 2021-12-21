@@ -37,10 +37,10 @@ class F3App extends Prefab
         self::$_f3 = Base::instance();
         self::registerService('cache', CacheService::class, self::vars('CONF.cache'));
         self::registerService('database', DatabaseService::class, self::vars('CONF.database'));
-        self::registerService('session', SessionService::class, self::vars('CONF.session'));
         self::registerService('mail', MailService::class, self::vars('CONF.mail'));
         self::registerService('log', LogService::class, self::vars('CONF.log'));
         self::registerService('input', InputService::class, self::vars('CONF.input'));
+        self::registerService('session', SessionService::class, self::vars('CONF.session'));
     }
 
     /**
