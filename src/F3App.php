@@ -40,7 +40,7 @@ class F3App extends Prefab
         self::register('mail', MailService::class, self::vars('CONF.mail'));
         self::register('log', LogService::class, self::vars('CONF.log'));
         self::register('input', InputService::class, self::vars('CONF.input'));
-        
+        self::register('session', SessionService::class, self::vars('CONF.session'));
     }
 
     /**
@@ -52,8 +52,6 @@ class F3App extends Prefab
      */
     static function beforeroute(Base $f3_): void
     {
-        self::register('session', SessionService::class, self::vars('CONF.session'));
-        
         $f3_->set('PARAMS.vers', $f3_->get('PARAMS.vers') ?: 'v1');
         $f3_->set('PARAMS.ctrl', $f3_->get('PARAMS.ctrl') ?: 'home');
         $f3_->set('PARAMS.0', '/' . $f3_->get('PARAMS.ctrl'));
@@ -162,7 +160,7 @@ class F3App extends Prefab
 
 
         if ((int)$f3_->get('CONF.csrf.enable') === 1)
-            $f3_->copy('CSRF', 'SESSION.csrf');
+            self::$_f3->copy('CSRF', 'SESSION.csrf');
 
         $_logger = self::service('log');
         $_logger->write('CSRF: ' . $f3_->get('CSRF'));
