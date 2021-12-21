@@ -253,7 +253,7 @@ class F3App extends Prefab
      * @param string $name_
      * @return mixed service instance
      */
-    static function getService(string $name_)
+    static function service(string $name_)
     {
         return isset(self::$_service[$name_]) ? self::$_service[$name_]::instance() : NULL;
     }
