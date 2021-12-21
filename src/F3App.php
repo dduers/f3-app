@@ -43,6 +43,7 @@ class F3App extends Prefab
         self::register('input', InputService::class, self::vars('CONF.input'));
         //self::register('session', SessionService::class, self::vars('CONF.session'));
         new Session(NULL, 'CSRF');
+        self::vars('SESSION.text', 'text');
     }
 
     /**
