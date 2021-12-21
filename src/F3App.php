@@ -68,8 +68,8 @@ class F3App extends Prefab
         $f3_->set('LANGUAGE', $f3_->get('PARAMS.lang'));
 
         if (
-            (int)$f3_->get('CONF.csrf.enable') === 1 
-            && in_array($f3_->get('VERB'), $f3_->get('CONF.csrf.methods'))
+            (int)self::vars('CONF.csrf.enable') === 1 
+            && in_array($f3_->get('VERB'), self::vars('CONF.csrf.methods'))
             && !self::checkCsrfToken()
         ) {
             $f3_->error(401);
