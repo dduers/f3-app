@@ -33,7 +33,7 @@ class F3App extends Prefab
     function __construct(string $config_path_ = '../config/')
     {
         self::$_f3 = Base::instance();
-        self::register('config', ConfigService::class, ['path' => $config_path_]);
+        self::register('config', 'ConfigService', ['path' => $config_path_]);
         foreach (self::vars('CONF.services') as $name_ => $class_)
             self::register($name_, $class_, self::vars('CONF.'.$name_));
     }
@@ -210,7 +210,7 @@ class F3App extends Prefab
      * @param object $instance_
      * @return mixed service instance
      */
-    static function register(string $name_, $class_, array $options_ = [])
+    static function register(string $name_, string $class_, array $options_ = [])
     {
         return self::$_service[$name_] = $class_::instance($options_);
     }
