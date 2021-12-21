@@ -15,7 +15,6 @@ use Dduers\F3App\Service\MailService;
 use Dduers\F3App\Service\SessionService;
 use Dduers\F3App\Service\LogService;
 use Dduers\F3App\Service\CacheService;
-use Session;
 
 /**
  * application base controller
