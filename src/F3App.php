@@ -69,7 +69,7 @@ class F3App extends Prefab
 
         if (
             (int)self::vars('CONF.csrf.enable') === 1 
-            && in_array($f3_->get('VERB'), self::vars('CONF.csrf.methods'))
+            && in_array(self::vars('VERB'), self::vars('CONF.csrf.methods'))
             && !self::checkCsrfToken()
         ) {
             $f3_->error(401);
@@ -157,7 +157,7 @@ class F3App extends Prefab
                 break;
         }
 
-        if ((int)$f3_->get('CONF.csrf.enable') === 1)
+        if ((int)self::vars('CONF.csrf.enable') === 1)
             $f3_->copy('CSRF', 'SESSION.csrf');
 
         return;
