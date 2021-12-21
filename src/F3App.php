@@ -41,6 +41,7 @@ class F3App extends Prefab
         self::registerService('mail', MailService::class, self::vars('CONF.mail'));
         self::registerService('log', LogService::class, self::vars('CONF.log'));
         self::registerService('input', InputService::class, self::vars('CONF.input'));
+        self::registerService('session', SessionService::class, self::vars('CONF.session'));
     }
 
     /**
@@ -54,8 +55,6 @@ class F3App extends Prefab
      */
     static function beforeroute(Base $f3_): void
     {
-        self::registerService('session', SessionService::class, self::vars('CONF.session'));
-
         /*
         if (!count(glob($f3_->get('LOCALES') . '*.ini')))
             throw new \Exception('DICTIONARY check failed');
