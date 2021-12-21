@@ -9,7 +9,7 @@ use Cache;
 use Prefab;
 use Template;
 
-use Dduers\F3App\F3AppConfig;
+use Dduers\F3App\Service\ConfigService;
 use Dduers\F3App\Service\DatabaseService;
 use Dduers\F3App\Service\InputService;
 use Dduers\F3App\Service\MailService;
@@ -22,7 +22,6 @@ use Dduers\F3App\Service\LogService;
  */
 class F3App extends Prefab
 {
-    static private F3AppConfig $_config;
     static private Base $_f3;
     static private $_cache;
     static private array $_service = [];
@@ -32,9 +31,9 @@ class F3App extends Prefab
      * - load application configuration
      * - initialization of class properties
      */
-    function __construct()
+    function __construct(string $config_path_ = '../config/')
     {
-        self::$_config = F3AppConfig::instance();
+        self::registerService('config', ConfigService::class, ['path' => $config_path_]);
         self::$_f3 = self::getFw();
         self::$_cache = self::getCache();
         self::registerService('database', DatabaseService::class, self::vars('CONF.database'));
