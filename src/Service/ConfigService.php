@@ -27,7 +27,7 @@ class ConfigService extends Prefab implements ServiceInterface
         self::$_f3 = Base::instance();
         self::$_options = $options_;
 
-        self::$_f3->config(__DIR__ . '/Config/default.ini');
+        self::$_f3->config(__DIR__ . '/../Config/default.ini');
 
         $_config_path = (self::$_options['path'] ?? '') ?: self::F3APP_DEFAULT_CONFIG_DIR;
         foreach (glob($_config_path . '*.ini') as $_inifile)
