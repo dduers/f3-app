@@ -63,7 +63,7 @@ final class SanitizerService extends Prefab implements ServiceInterface
      */
     static public function sanitize(array $subject_, array $exclude_ = [])
     {
-        $_result = [];
+        $_result = $subject_;
         foreach ($subject_ as $key_ => $value_) {
             if (in_array($key_, $exclude_))
                 continue;
