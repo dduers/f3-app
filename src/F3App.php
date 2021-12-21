@@ -33,8 +33,8 @@ class F3App extends Prefab
      */
     function __construct(string $config_path_ = '../config/')
     {
-        self::$_f3 = Base::instance();
         self::register('config', ConfigService::class, ['path' => $config_path_]);
+        self::$_f3 = Base::instance();
         self::register('cache', CacheService::class, self::vars('CONF.cache'));
         self::register('database', DatabaseService::class, self::vars('CONF.database'));
         self::register('mail', MailService::class, self::vars('CONF.mail'));
