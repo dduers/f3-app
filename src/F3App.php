@@ -15,6 +15,7 @@ use Dduers\F3App\Service\MailService;
 use Dduers\F3App\Service\SessionService;
 use Dduers\F3App\Service\LogService;
 use Dduers\F3App\Service\CacheService;
+use Session;
 
 /**
  * application base controller
@@ -40,7 +41,8 @@ class F3App extends Prefab
         self::register('mail', MailService::class, self::vars('CONF.mail'));
         self::register('log', LogService::class, self::vars('CONF.log'));
         self::register('input', InputService::class, self::vars('CONF.input'));
-        self::register('session', SessionService::class, self::vars('CONF.session'));
+        //self::register('session', SessionService::class, self::vars('CONF.session'));
+        new Session(NULL, 'CSRF');
     }
 
     /**
