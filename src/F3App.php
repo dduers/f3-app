@@ -11,10 +11,10 @@ use Template;
 
 use Dduers\F3App\F3AppConfig;
 use Dduers\F3App\Service\DatabaseService;
+use Dduers\F3App\Service\InputService;
 use Dduers\F3App\Service\MailService;
 use Dduers\F3App\Service\SessionService;
 use Dduers\F3App\Service\LogService;
-use Dduers\F3App\Service\SanitizerService;
 
 /**
  * application base controller
@@ -25,7 +25,6 @@ class F3App extends Prefab
     static private F3AppConfig $_config;
     static private Base $_f3;
     static private $_cache;
-    static private array $_request_headers = [];
     static private array $_service = [];
 
     /**
@@ -38,10 +37,10 @@ class F3App extends Prefab
         self::$_config = F3AppConfig::instance();
         self::$_f3 = self::getFw();
         self::$_cache = self::getCache();
-        self::registerService('database', DatabaseService::class);
-        self::registerService('mail', MailService::class);
-        self::registerService('log', LogService::class);
-        self::registerService('sanitizer', SanitizerService::class);
+        self::registerService('database', DatabaseService::class, self::vars('CONF.database'));
+        self::registerService('mail', MailService::class, self::vars('CONF.mail'));
+        self::registerService('log', LogService::class, self::vars('CONF.log'));
+        self::registerService('input', InputService::class, self::vars('CONF.input'));
     }
 
     /**
@@ -53,9 +52,9 @@ class F3App extends Prefab
      * @param Base $f3_ f3 framework instance
      * @return void
      */
-    static public function beforeroute(Base $f3_): void
+    static function beforeroute(Base $f3_): void
     {
-        self::registerService('session', SessionService::class);
+        self::registerService('session', SessionService::class, self::vars('CONF.session'));
 
         /*
         if (!count(glob($f3_->get('LOCALES') . '*.ini')))
@@ -77,24 +76,29 @@ class F3App extends Prefab
         }
         $f3_->set('LANGUAGE', $f3_->get('PARAMS.lang'));
 
-        foreach (getallheaders() as $header_ => $value_)
-            self::$_request_headers[$header_] = $value_;
-
-        
-
-        if ((int)self::$_f3->get('CONF.security.csrf.enable') === 1) {
-            if (in_array($f3_->get('VERB'), self::$_f3->get('CONF.security.csrf.methods'))) {
-                $_token = $f3_->get('POST._token') ?? $f3_->get('PUT._token') ?? $f3_->get('GET._token');
-                if (!$_token || !$f3_->get('SESSION.csrf') || $_token !== $f3_->get('SESSION.csrf')) {
-                    $f3_->error(401);
-                    return;
-                }
-            }
+        if (
+            (int)self::$_f3->get('CONF.csrf.enable') === 1
+            && in_array(self::vars('VERB'), self::vars('CONF.csrf.methods'))
+            && !self::checkCsrfToken()
+        ) {
+            $f3_->error(401);
+            return;
         }
 
         return;
     }
 
+    /**
+     * check csrf token
+     * @return bool
+     */
+    static private function checkCsrfToken(): bool
+    {
+        $_token = self::vars('POST._token') ?? self::vars('PUT._token') ?? self::vars('GET._token') ?? '';
+        if (!$_token || !self::vars('SESSION.csrf') || $_token !== self::vars('SESSION.csrf'))
+            return false;
+        return true;
+    }
 
     /**
      * routing post processor
@@ -103,7 +107,7 @@ class F3App extends Prefab
      * @param Base $f3_ f3 framework instance
      * @return void
      */
-    static public function afterroute(Base $f3_): void
+    static function afterroute(Base $f3_): void
     {
         if ($_SERVER['HTTP_ORIGIN'] ?? '') {
             if (is_array($f3_->get('CONF.header.accesscontrolalloworigin')) && in_array($_SERVER['HTTP_ORIGIN'], $f3_->get('CONF.header.accesscontrolalloworigin')))
@@ -157,13 +161,14 @@ class F3App extends Prefab
             if ($f3_->get('CONF.header.contenttype'))
                 $_content_type = $f3_->get('CONF.header.contenttype');
         }
+        $_content_type = strtolower($_content_type);
         if ($_content_type)
-            header('Content-Type: ' . strtolower($_content_type));
+            header('Content-Type: ' . $_content_type);
 
         if ($f3_->get('RESPONSE.filename'))
             header('Content-Disposition: attachment; filename="' . $f3_->get('RESPONSE.filename') . '"');
 
-        switch (strtolower($_content_type ?? '')) {
+        switch ($_content_type ?: '') {
             default:
             case 'application/json':
                 echo json_encode($f3_->get('RESPONSE.data') ?? [], ($f3_->get('DEBUG') ? JSON_PRETTY_PRINT : 0));
@@ -173,7 +178,9 @@ class F3App extends Prefab
                 break;
         }
 
-        $f3_->copy('CSRF', 'SESSION.csrf');
+        if ((int)self::$_f3->get('CONF.csrf.enable') === 1)
+            $f3_->copy('CSRF', 'SESSION.csrf');
+
         return;
     }
 
@@ -182,7 +189,7 @@ class F3App extends Prefab
      * @param Base $f3_ f3 framework instance
      * @return bool true = error handled, false = fallback to default f3 error handler
      */
-    static public function onerror(Base $f3_): bool
+    static function onerror(Base $f3_): bool
     {
         $f3_->set('RESPONSE.data', [
             'result' => 'error',
@@ -204,7 +211,7 @@ class F3App extends Prefab
      * @param string $ctrl_ name of controller
      * @return void
      */
-    static public function reroute(string $vers_, string $ctrl_, string $id_ = ''): void
+    static function reroute(string $vers_, string $ctrl_, string $id_ = ''): void
     {
         self::$_f3->reroute($vers_ . '/' . $ctrl_ . ($id_ ? '/' . $id_ : '')(self::$_f3->get('QUERY') ? '?' . self::$_f3->get('QUERY') : ''));
         return;
@@ -216,31 +223,18 @@ class F3App extends Prefab
      * @param mixed $value_ (optional) if set, the var is updated with the value
      * @return mixed current value or new value of f3 hive variable
      */
-    static public function vars(string $name_, $value_ = NULL)
+    static function vars(string $name_, $value_ = NULL)
     {
         if (isset($value_))
             return (self::$_f3->set($name_, $value_));
         else return (self::$_f3->get($name_));
     }
 
-    static public function vars_cache(string $name_, $value_ = NULL)
+    static function vars_cache(string $name_, $value_ = NULL)
     {
         if (isset($value_))
             return (self::$_cache->set($name_, $value_));
         else return (self::$_cache->get($name_));
-    }
-
-    /**
-     * get bearer token from authorization header
-     * @return string
-     */
-    static public function getBearerToken(): string
-    {
-        $_auth_header_prefix = 'Bearer ';
-        $_auth_header = self::$_request_headers['Authorization'] ?? '';
-        if (strpos($_auth_header, $_auth_header_prefix) === 0)
-            return substr($_auth_header, strlen($_auth_header_prefix));
-        return '';
     }
 
     /**
@@ -249,9 +243,9 @@ class F3App extends Prefab
      * @param object $instance_
      * @return mixed service instance
      */
-    static private function registerService(string $name_, $class_)
+    static private function registerService(string $name_, $class_, array $options_ = [])
     {
-        return self::$_service[$name_] = $class_::instance(self::vars('CONF.' . $name_));
+        return self::$_service[$name_] = $class_::instance($options_);
     }
 
     /**
@@ -259,21 +253,21 @@ class F3App extends Prefab
      * @param string $name_
      * @return mixed service instance
      */
-    static public function getService(string $name_)
+    static function getService(string $name_)
     {
-        return isset(self::$_service[$name_]) ? self::$_service[$name_]::getService() : NULL;
+        return isset(self::$_service[$name_]) ? self::$_service[$name_]::instance() : NULL;
     }
 
     /**
      * get framework instance
      * @return Base
      */
-    static public function getFw(): Base
+    static function getFw(): Base
     {
         return Base::instance();
     }
 
-    static public function getCache()
+    static function getCache()
     {
         if (!self::$_cache) {
             self::$_cache = Cache::instance();
@@ -286,7 +280,7 @@ class F3App extends Prefab
      * run application
      * @return void
      */
-    static public function run(): void
+    static function run(): void
     {
         self::$_f3->run();
     }
