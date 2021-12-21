@@ -23,7 +23,6 @@ use Dduers\F3App\Service\CacheService;
 class F3App extends Prefab
 {
     static private Base $_f3;
-    //static private $_cache;
     static private array $_service = [];
 
     /**
@@ -158,7 +157,7 @@ class F3App extends Prefab
         }
 
         if ((int)$f3_->get('CONF.csrf.enable') === 1)
-            $f3_->copy('CSRF', 'SESSION.csrf');
+            $f3_->set('SESSION.csrf', self::service('session')::getToken());
 
         return;
     }

@@ -16,7 +16,7 @@ final class CacheService extends Prefab implements ServiceInterface
     private const DEFAULT_OPTIONS = [
         'enable' => 0
     ];
-    static private Cache $_service;
+    static private $_service;
     static private array $_options = [];
 
     /**
