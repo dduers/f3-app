@@ -41,7 +41,7 @@ class F3App extends Prefab
         self::registerService('database', DatabaseService::class);
         self::registerService('mail', MailService::class);
         self::registerService('log', LogService::class);
-        
+        self::registerService('sanitizer', SanitizerService::class);
     }
 
     /**
@@ -80,7 +80,7 @@ class F3App extends Prefab
         foreach (getallheaders() as $header_ => $value_)
             self::$_request_headers[$header_] = $value_;
 
-        self::registerService('sanitizer', SanitizerService::class);
+        
 
         if ((int)self::$_f3->get('CONF.security.csrf.enable') === 1) {
             if (in_array($f3_->get('VERB'), self::$_f3->get('CONF.security.csrf.methods'))) {
@@ -251,6 +251,8 @@ class F3App extends Prefab
      */
     static private function registerService(string $name_, $class_)
     {
+        $_logger = self::getService('log');
+        $_logger->write(self::vars('CONF.' . $name_));
         return self::$_service[$name_] = $class_::instance(self::vars('CONF.' . $name_));
     }
 
