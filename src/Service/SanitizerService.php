@@ -36,8 +36,6 @@ final class SanitizerService extends Prefab implements ServiceInterface
 
         if ((int)self::$_options['sanitizer']['enable'] === 1)
             self::sanitizeInputData();
-
-        self::$_service = self::instance();
     }
 
     /**
@@ -46,7 +44,7 @@ final class SanitizerService extends Prefab implements ServiceInterface
      */
     static function getService()
     {
-        return self::$_service;
+        return self::instance();
     }
 
     /**
