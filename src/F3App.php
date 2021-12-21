@@ -34,13 +34,13 @@ class F3App extends Prefab
     function __construct(string $config_path_ = '../config/')
     {
         self::$_f3 = Base::instance();
-        self::registerService('config', ConfigService::class, ['path' => $config_path_]);
-        self::registerService('cache', CacheService::class, self::vars('CONF.cache'));
-        self::registerService('database', DatabaseService::class, self::vars('CONF.database'));
-        self::registerService('mail', MailService::class, self::vars('CONF.mail'));
-        self::registerService('log', LogService::class, self::vars('CONF.log'));
-        self::registerService('input', InputService::class, self::vars('CONF.input'));
-        self::registerService('session', SessionService::class, self::vars('CONF.session'));
+        self::register('config', ConfigService::class, ['path' => $config_path_]);
+        self::register('cache', CacheService::class, self::vars('CONF.cache'));
+        self::register('database', DatabaseService::class, self::vars('CONF.database'));
+        self::register('mail', MailService::class, self::vars('CONF.mail'));
+        self::register('log', LogService::class, self::vars('CONF.log'));
+        self::register('input', InputService::class, self::vars('CONF.input'));
+        self::register('session', SessionService::class, self::vars('CONF.session'));
     }
 
     /**
@@ -215,7 +215,7 @@ class F3App extends Prefab
      * @param object $instance_
      * @return mixed service instance
      */
-    static private function registerService(string $name_, $class_, array $options_ = [])
+    static function register(string $name_, $class_, array $options_ = [])
     {
         return self::$_service[$name_] = $class_::instance($options_);
     }
