@@ -157,8 +157,8 @@ class F3App extends Prefab
                 break;
         }
 
-        if ((int)$f3_->get('CONF.csrf.enable') === 1)
-            $f3_->set('CSRF', 'SESSION.csrf');
+        //if ((int)$f3_->get('CONF.csrf.enable') === 1)
+        $f3_->set('CSRF', 'SESSION.csrf');
 
         return;
     }
