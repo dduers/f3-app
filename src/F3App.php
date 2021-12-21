@@ -251,6 +251,9 @@ class F3App extends Prefab
      */
     static private function registerService(string $name_, $class_)
     {
+        $_logger = self::getService('log');
+        if ($_logger)
+            $_logger->write(print_r(self::vars('CONF.' . $name_), true));
         return self::$_service[$name_] = $class_::instance(self::vars('CONF.' . $name_));
     }
 
