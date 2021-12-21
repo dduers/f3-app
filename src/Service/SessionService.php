@@ -17,7 +17,7 @@ final class SessionService extends Prefab implements ServiceInterface
     private const DEFAULT_OPTIONS = [
         'engine' => '',
         'table' => 'sessions',
-        'key' => 'CSRF',
+        'key' => '_token',
         'cookie' => [
             'options' => [
                 'lifetime' => 0,
@@ -105,9 +105,31 @@ final class SessionService extends Prefab implements ServiceInterface
      * get token from the session (previous request)
      * @return string
      */
-    static function getTokenFromSession(): string
+    static private function getServerToken(): string
     {
         return self::$_f3->get('SESSION.' . self::$_options['key']);
+    }
+
+    /**
+     * get token received from client
+     * @return string
+     */
+    static private function getClientToken(): string
+    {
+        return (string)(self::$_f3->get('POST.' . self::$_options['key']) ?? self::$_f3->get('PUT.' . self::$_options['key']) ?? self::$_f3->get('GET.' . self::$_options['key']) ?? '');
+    }
+
+    /**
+     * check csrf token
+     * @return bool
+     */
+    static function checkToken(): bool
+    {
+        $_token_server = self::getServerToken();
+        $_token_client = self::getClientToken();
+        if (!$_token_client || !$_token_server || $_token_client !== $_token_server)
+            return false;
+        return true;
     }
 
     /**

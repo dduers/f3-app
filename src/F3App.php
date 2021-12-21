@@ -69,7 +69,7 @@ class F3App extends Prefab
         if (
             (int)$f3_->get('CONF.csrf.enable') === 1
             && in_array($f3_->get('VERB'), $f3_->get('CONF.csrf.methods'))
-            && !self::checkCsrfToken()
+            && !self::service('session')::checkToken()
         ) {
             $f3_->error(401);
             return;
@@ -236,19 +236,6 @@ class F3App extends Prefab
     static function getFw(): Base
     {
         return self::$_f3;
-    }
-
-    /**
-     * check csrf token
-     * @return bool
-     */
-    static private function checkCsrfToken(): bool
-    {
-        $_token_server = self::service('session')::getTokenFromSession();
-        $_token_client = self::vars('POST._token') ?? self::vars('PUT._token') ?? self::vars('GET._token') ?? '';
-        if (!$_token_client || !$_token_server || $_token_client !== $_token_server)
-            return false;
-        return true;
     }
 
     /**
