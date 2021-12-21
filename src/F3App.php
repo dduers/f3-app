@@ -52,6 +52,7 @@ class F3App extends Prefab
      */
     static function beforeroute(Base $f3_): void
     {
+        $f3_->set('SESSION.test', 1);
         $f3_->set('PARAMS.vers', $f3_->get('PARAMS.vers') ?: 'v1');
         $f3_->set('PARAMS.ctrl', $f3_->get('PARAMS.ctrl') ?: 'home');
         $f3_->set('PARAMS.0', '/' . $f3_->get('PARAMS.ctrl'));
