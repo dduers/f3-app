@@ -18,15 +18,7 @@ final class DatabaseService extends Prefab implements ServiceInterface
     function __construct(array $options_)
     {
         self::$_options = $options_;
-        self::init();
-    }
 
-    /**
-     * init service instance
-     * @return void
-     */
-    static private function init(): void
-    {
         if ((int)self::$_options['enable'] === 1) {
 
             switch (strtolower(self::$_options['engine'])) {

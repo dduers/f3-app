@@ -20,25 +20,15 @@ final class MailService extends Prefab implements ServiceInterface
     {
         self::$_options = $options_;
         self::$_f3 = Base::instance();
-        self::init();
-    }
 
-    /**
-     * init service instance
-     * @return void
-     */
-    static private function init(): void
-    {
-        if ((int)self::$_options['enable'] === 1) {
-            if (!self::$_service)
-                self::$_service = new SMTP(
-                    self::$_options['host'],
-                    self::$_options['port'],
-                    self::$_options['scheme'],
-                    self::$_options['user'],
-                    self::$_options['pass']
-                );
-        } else self::$_service = NULL;
+        if ((int)self::$_options['enable'] === 1)
+            self::$_service = new SMTP(
+                self::$_options['host'],
+                self::$_options['port'],
+                self::$_options['scheme'],
+                self::$_options['user'],
+                self::$_options['pass']
+            );
     }
 
     /**

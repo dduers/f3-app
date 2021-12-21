@@ -86,7 +86,7 @@ final class InputService extends Prefab implements ServiceInterface
     }
 
     /**
-     * sanitize input data
+     * sanitize input data (strip tags)
      * @return void
      */
     static function sanitizeInput(): void
@@ -103,7 +103,7 @@ final class InputService extends Prefab implements ServiceInterface
     }
 
     /**
-     * parse input data
+     * parse input data from various content types and formats to assoc arrays
      * @return void
      */
     static function parseInput(): void
