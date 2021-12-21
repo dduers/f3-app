@@ -253,7 +253,7 @@ class F3App extends Prefab
     {
         $_logger = self::getService('log');
         if ($_logger)
-            $_logger->write(self::vars('CONF.' . $name_));
+            $_logger->write((array)self::vars('CONF.' . $name_));
         return self::$_service[$name_] = $class_::instance(self::vars('CONF.' . $name_));
     }
 
