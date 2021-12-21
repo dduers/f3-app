@@ -224,15 +224,6 @@ class F3App extends Prefab
     }
 
     /**
-     * get framework instance
-     * @return Base
-     */
-    static function getFw(): Base
-    {
-        return self::$_f3;
-    }
-
-    /**
      * run application
      * @return void
      */
