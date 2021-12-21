@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Dduers\F3App\Service;
 
+use Prefab;
+use Dduers\F3App\Iface\ServiceInterface;
 use DB\Jig;
 use DB\Mongo;
 use DB\SQL;
-use Prefab;
-use Dduers\F3App\Iface\ServiceInterface;
 
 final class DatabaseService extends Prefab implements ServiceInterface
 {
@@ -19,7 +19,7 @@ final class DatabaseService extends Prefab implements ServiceInterface
     {
         self::$_options = $options_;
 
-        if ((int)self::$_options['enable'] === 1) {
+        if ((int)(self::$_options['enable'] ?? 0) === 1) {
 
             switch (strtolower(self::$_options['engine'] ?? '')) {
 
