@@ -7,19 +7,31 @@ namespace Dduers\F3App\Service;
 use Base;
 use Prefab;
 use SMTP;
-use Template;
 use Dduers\F3App\Iface\ServiceInterface;
 
 final class MailService extends Prefab implements ServiceInterface
 {
+    private const DEFAULT_OPTIONS = [
+        'enable' => 0,
+        'host' => 'localhost',
+        'port' => 25,
+        'user' => '',
+        'pass' => '',
+        'scheme' => '',
+        'defaultsender' => [
+            'email' => 'noreply@localhost',
+            'name' => ''
+        ],
+        'mime' => 'text/html'
+    ];
     static private $_service;
     static private array $_options = [];
     static private Base $_f3;
 
     function __construct(array $options_)
     {
-        self::$_options = $options_;
         self::$_f3 = Base::instance();
+        self::$_options = array_merge(self::DEFAULT_OPTIONS, $options_);
 
         if ((int)self::$_options['enable'] === 1)
             self::$_service = new SMTP(
@@ -51,41 +63,39 @@ final class MailService extends Prefab implements ServiceInterface
 
     /**
      * send an email message through smtp
-     * @param array|string $to_ array of receiver email addresses or string with comma separated email addresses
-     * @param string $subject_ subject of message
-     * @param string $message_ either a string with the message text of a template filename
-     * @param string $from_addr_ (optional) email address to set for sender
-     * @param string $from_name_ (optional) name to set for sender
+     * @param array $to_ array of receiver ['email' => 'name']
+     * @param string $subject_
+     * @param string $message_
+     * @param array $from_ (optional) array of sender (one item) ['email' => 'name']
      * @param array $attach_ (optional) array of filenames
      * @return bool true on success, false on error
      */
-    static function sendMail($to_, string $subject_, string $message_, string $from_addr_ = NULL, string $from_name_ = NULL, array $attach_ = []): bool
+    static function sendMail(array $to_, string $subject_, string $message_, array $from_ = [], array $attach_ = []): bool
     {
-        if (!((int)self::$_options['enable'] === 1))
+        if (!(int)self::$_options['enable'] === 1)
             return false;
 
         self::$_service->set('Content-type', self::$_options['mime'] . '; charset=' . self::$_f3->get('ENCODING'));
 
-        if (is_string($to_))
-            $to_ = explode(',', $to_);
-
         $_toaddr = [];
-        foreach ($to_ as $_x)
-            $_toaddr[] = '<' . trim($_x) . '>';
-
+        foreach ($to_ as $email_ => $name_)
+            $_toaddr[] = $name_ . '<' . $email_ . '>';
         $_toaddr = implode(', ', $_toaddr);
-        $from_addr_ = $from_addr_ ?: self::$_options['defaultsender']['email'];
-        $from_name_ = $from_name_ ?: (self::$_options['defaultsender']['name'] ?: self::$_options['defaultsender']['email']);
+
+        $_fromaddr = [];
+        foreach ($from_ as $email_ => $name_)
+            $_fromaddr[] = $name_ . '<' . $email_ . '>';
+        if (count($_fromaddr) !== 1)
+            $_fromaddr[] = self::$_options['defaultsender']['name'] . '<' . self::$_options['defaultsender']['email'] . '>';
+        $_fromaddr = implode(', ', $_fromaddr);
+
+        foreach ($attach_ as $_attachment)
+            self::$_service->attach($_attachment);
 
         self::$_service->set('To', $_toaddr);
-        self::$_service->set('From', '"' . $from_name_ . '" ' . '<' . $from_addr_ . '>');
+        self::$_service->set('From', $_fromaddr);
         self::$_service->set('Subject', $subject_);
 
-        foreach ($attach_ as $_x)
-            self::$_service->attach($_x);
-
-        if (file_exists(self::$_f3->get('UI') . 'mail/' . $message_ . '.html'))
-            return self::$_service->send(Template::instance()->render('mail/' . $message_ . '.html', self::$_options['mime']));
-        else return self::$_service->send($message_);
+        return self::$_service->send($message_);
     }
 }
