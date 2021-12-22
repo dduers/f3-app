@@ -16,6 +16,7 @@ final class SessionService extends Prefab implements ServiceInterface
 {
     private const DEFAULT_OPTIONS = [
         'engine' => '',
+        'name' => 'PHPSESSID',
         'table' => 'sessions',
         'key' => '_token',
         'cookie' => [
@@ -45,6 +46,7 @@ final class SessionService extends Prefab implements ServiceInterface
         self::$_options = array_merge(self::DEFAULT_OPTIONS, $options_);
 
         session_set_cookie_params(self::$_options['cookie']['options']);
+        session_name(self::$_options['name']);
 
         switch (self::$_options['engine'] ?? '') {
 
