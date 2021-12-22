@@ -10,6 +10,13 @@ use Dduers\F3App\Iface\ServiceInterface;
 
 final class InputService extends Prefab implements ServiceInterface
 {
+    private const DEFAULT_OPTIONS = [
+        'sanitizer' => [
+            'enable' => 0,
+            'variables' => [],
+            'exclude' => []
+        ]
+    ];
     static private Base $_f3;
     static private array $_options = [];
     static private array $_request_headers = [];
@@ -17,14 +24,12 @@ final class InputService extends Prefab implements ServiceInterface
     function __construct(array $options_)
     {
         self::$_f3 = Base::instance();
-        self::$_options = $options_;
-        
+        self::$_options = array_merge(self::DEFAULT_OPTIONS, $options_);
+
         foreach (getallheaders() as $header_ => $value_)
             self::$_request_headers[$header_] = $value_;
 
-        if ((int)self::$_options['parser']['enable'] === 1)
-            self::parseInput();
-
+        self::parseInput();
         if ((int)self::$_options['sanitizer']['enable'] === 1)
             self::sanitizeInput();
     }
