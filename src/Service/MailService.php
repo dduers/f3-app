@@ -79,12 +79,12 @@ final class MailService extends Prefab implements ServiceInterface
 
         $_toaddr = [];
         foreach ($to_ as $email_ => $name_)
-            $_toaddr[] = $name_ . '<' . $email_ . '>';
+            $_toaddr[] = $email_ . '<' . $name_ . '>';
         $_toaddr = implode(', ', $_toaddr);
 
         $_fromaddr = [];
         foreach ($from_ as $email_ => $name_)
-            $_fromaddr[] = $name_ . '<' . $email_ . '>';
+            $_fromaddr[] =  $email_ . '<' . $name_ . '>';
         if (count($_fromaddr) !== 1)
             $_fromaddr[] = self::$_options['defaultsender']['name'] . '<' . self::$_options['defaultsender']['email'] . '>';
         $_fromaddr = implode(', ', $_fromaddr);
