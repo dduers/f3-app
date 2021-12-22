@@ -30,55 +30,50 @@ final class SessionService extends Prefab implements ServiceInterface
         ]
     ];
     static private $_service;
-    static private array $_options = [];
+    static private $_f3;
     static private $_db;
     static private $_cache;
-    static private $_f3;
+    static private array $_options = [];
+
     static private string $_token = '';
 
     function __construct(array $options_)
     {
-        self::$_options = array_merge(self::DEFAULT_OPTIONS, $options_);
+        self::$_f3 = Base::instance();
         self::$_db = DatabaseService::instance()::getService();
         self::$_cache = CacheService::instance()::getService();
-        self::$_f3 = Base::instance();
-
-        /*
-        foreach (self::$_options['cookie']['options'] as $option_ => $value_)
-            if (isset($value_))
-                ini_set('session.cookie_' . $option_, (string)$value_);
-        */
+        self::$_options = array_merge(self::DEFAULT_OPTIONS, $options_);
 
         session_set_cookie_params(self::$_options['cookie']['options']);
 
-        switch (strtolower(self::$_options['engine'] ?? '')) {
+        switch (self::$_options['engine'] ?? '') {
 
             case 'sql':
                 if (!self::$_db)
-                    self::$_token = self::createToken();
+                    self::$_token = self::generateToken();
                 else self::$_service = new SQLSession(self::$_db, self::$_options['table'], TRUE, NULL, self::$_options['key']);
                 break;
 
             case 'mongo':
                 if (!self::$_db)
-                    self::$_token = self::createToken();
+                    self::$_token = self::generateToken();
                 else self::$_service = new MongoSession(self::$_db, self::$_options['table'], NULL, self::$_options['key']);
                 break;
 
             case 'jig':
                 if (!self::$_db)
-                    self::$_token = self::createToken();
+                    self::$_token = self::generateToken();
                 else self::$_service = new JigSession(self::$_db, self::$_options['table'], NULL, self::$_options['key']);
                 break;
 
             case 'cache':
                 if (!self::$_cache)
-                    self::$_token = self::createToken();
+                    self::$_token = self::generateToken();
                 self::$_service = new Session(NULL, self::$_options['key'], self::$_cache);
                 break;
 
             default:
-                self::$_token = self::createToken();
+                self::$_token = self::generateToken();
                 break;
         }
 
@@ -90,27 +85,9 @@ final class SessionService extends Prefab implements ServiceInterface
      * create random string token
      * @return string
      */
-    static private function createToken(): string
+    static private function generateToken(): string
     {
         return bin2hex(random_bytes(7));
-    }
-
-    /**
-     * get token stored on the server (previous request)
-     * @return string
-     */
-    static private function getServerToken(): string
-    {
-        return self::$_f3->get('SESSION.' . self::$_options['key']);
-    }
-
-    /**
-     * get token received from client
-     * @return string
-     */
-    static private function getClientToken(): string
-    {
-        return (string)(self::$_f3->get('POST.' . self::$_options['key']) ?? self::$_f3->get('PUT.' . self::$_options['key']) ?? self::$_f3->get('GET.' . self::$_options['key']) ?? '');
     }
 
     /**
@@ -123,25 +100,25 @@ final class SessionService extends Prefab implements ServiceInterface
     }
 
     /**
-     * check csrf token
-     * @return bool
-     */
-    static function checkToken(): bool
-    {
-        $_token_server = self::getServerToken();
-        $_token_client = self::getClientToken();
-        if (!$_token_client || !$_token_server || $_token_client !== $_token_server)
-            return false;
-        return true;
-    }
-
-    /**
      * copy token to session
      * @return void
      */
     static function storeToken(): void
     {
         self::$_f3->set('SESSION.' . self::$_options['key'], self::$_token);
+    }
+
+    /**
+     * check csrf client token against server token
+     * @return bool
+     */
+    static function checkToken(): bool
+    {
+        $_token_server = self::$_f3->get('SESSION.' . self::$_options['key']);
+        $_token_client = (string)(self::$_f3->get('POST.' . self::$_options['key']) ?? self::$_f3->get('PUT.' . self::$_options['key']) ?? self::$_f3->get('GET.' . self::$_options['key']) ?? '');
+        if (!$_token_client || !$_token_server || $_token_client !== $_token_server)
+            return false;
+        return true;
     }
 
     /**
@@ -177,7 +154,7 @@ final class SessionService extends Prefab implements ServiceInterface
 
     /**
      * get service instance
-     * @return Session|SQLSession|MongoSession|JigSession
+     * @return Session|SQLSession|MongoSession|JigSession|null
      */
     static function getService()
     {
