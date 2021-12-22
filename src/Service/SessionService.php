@@ -21,7 +21,7 @@ final class SessionService extends Prefab implements ServiceInterface
         'cookie' => [
             'options' => [
                 'lifetime' => 0,
-                'path' => '/',
+                'path' => '',
                 'domain' => '',
                 'secure' => false,
                 'httponly' => true,
@@ -43,10 +43,13 @@ final class SessionService extends Prefab implements ServiceInterface
         self::$_cache = CacheService::instance()::getService();
         self::$_f3 = Base::instance();
 
-        foreach (self::$_options['cookie']['options'] as $option_ => $value_) {
+        /*
+        foreach (self::$_options['cookie']['options'] as $option_ => $value_)
             if (isset($value_))
                 ini_set('session.cookie_' . $option_, (string)$value_);
-        }
+        */
+
+        session_set_cookie_params(self::$_options['cookie']['options']);
 
         switch (strtolower(self::$_options['engine'] ?? '')) {
 
@@ -134,10 +137,42 @@ final class SessionService extends Prefab implements ServiceInterface
 
     /**
      * copy token to session
+     * @return void
      */
     static function storeToken(): void
     {
         self::$_f3->set('SESSION.' . self::$_options['key'], self::$_token);
+    }
+
+    /**
+     * destroy session
+     * @return void
+     */
+    static function destroy(): void
+    {
+        if (ini_get('session.use_cookies'))
+            self::deleteSessionCookie();
+
+        if (session_id())
+            session_destroy();
+    }
+
+    /**
+     * deletes the session cookie
+     * @return void
+     */
+    static private function deleteSessionCookie(): void
+    {
+        $_params = session_get_cookie_params();
+        setcookie(session_name(), '', array_filter([
+            'expires' => (string)(time() - 3600 * 24 * 365),
+            'domain' => (string)($_params['domain'] ?? '') ?: NULL,
+            'httponly' => (string)($_params['httponly'] ?? '') ?: NULL,
+            'secure' => (string)($_params['secure'] ?? '') ?: NULL,
+            'path' => (string)($_params['path'] ?? '') ?: NULL,
+            //'samesite' => (string)($_params['samesite'] ?? '') ?: NULL,
+        ]));
+        return;
     }
 
     /**
