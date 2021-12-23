@@ -35,7 +35,7 @@ final class ResponseService extends Prefab implements ServiceInterface
     static function dumpHeaders(): void
     {
         foreach (self::$_options['header'] as $header_ => $content_)
-            header($header_, $content_);
+            header($header_.': '.$content_);
     }
 
     /**
