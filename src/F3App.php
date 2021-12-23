@@ -192,7 +192,7 @@ class F3App extends Prefab
 
         $_service_response::dumpHeaders();
 
-        return $_service_response::getHeader('Content-Type');
+        return $_service_response::getHeader('Content-Type')[0];
     }
 
     /**
