@@ -13,7 +13,6 @@ final class ResponseService extends Prefab implements ServiceInterface
         'header' => []
     ];
     static private $_service;
-    static private $_f3;
     static private array $_options = [];
 
     function __construct(array $options_)
@@ -23,19 +22,26 @@ final class ResponseService extends Prefab implements ServiceInterface
 
     static function setHeader(string $header_, string $content_)
     {
-        self::$_options['header'][$header_] = $content_;
+        self::$_options['header'][$header_][] = $content_;
         return;
     }
 
-    static function getHeader($header_): string
+    static function setHeaders(array $headers_): void
+    {
+        foreach ($headers_ as $header_ => $content_)
+            self::$_options['header'][$header_] = array_merge(self::$_options['header'][$header_], $headers_);
+    }
+
+    static function getHeader($header_): array
     {
         return self::$_options['header'][$header_] ?? '';
     }
 
     static function dumpHeaders(): void
     {
-        foreach (self::$_options['header'] as $header_ => $content_)
-            header($header_.': '.$content_);
+        foreach (self::$_options['header'] as $header_ => $items_)
+            foreach ($items_ as $key_ => $content_)
+                header($header_ . ': ' . $content_, false);
     }
 
     /**

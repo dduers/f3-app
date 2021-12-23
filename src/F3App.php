@@ -43,6 +43,9 @@ class F3App extends Prefab
         $f3_->set('PARAMS.ctrl', $f3_->get('PARAMS.ctrl') ?: 'home');
         $f3_->set('PARAMS.0', '/' . $f3_->get('PARAMS.ctrl'));
 
+        $f3_->set('RESPONSE.header', []);
+        $f3_->set('RESPONSE.data', []);
+
         if (!$f3_->get('PARAMS.lang') || !file_exists($f3_->get('LOCALES') . $f3_->get('PARAMS.lang') . '.ini')) {
             $f3_->set('PARAMS.lang', $f3_->get('FALLBACK'));
             foreach (explode(',', strtolower($f3_->get('LANGUAGE'))) as $lang) {
@@ -128,13 +131,13 @@ class F3App extends Prefab
      */
     static private function responseHeaders(): string
     {
-        $_service_header = self::service('response');
+        $_service_response = self::service('response');
 
         if ($_SERVER['HTTP_ORIGIN'] ?? '') {
             if (is_array(self::vars('CONF.response.header.Access-Control-Allow-Origin')) && in_array($_SERVER['HTTP_ORIGIN'], self::vars('CONF.response.header.Access-Control-Allow-Origin')))
-                $_service_header::setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
+                $_service_response::setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
             elseif (is_string(self::vars('CONF.response.header.Access-Control-Allow-Origin')) && $_SERVER['HTTP_ORIGIN'] === self::vars('CONF.response.header.Access-Control-Allow-Origin'))
-                $_service_header::setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
+                $_service_response::setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
         }
 
         $_controller = self::vars('CONF.namespaces.controller') . '\\' . self::vars('PARAMS.ctrl');
@@ -145,8 +148,8 @@ class F3App extends Prefab
                     $_t[] = $method_;
             if (count($_t)) {
                 if (self::vars('VERB') === 'OPTIONS')
-                    $_service_header::setHeader('Access-Control-Allow-Methods', implode(',', $_t));
-                $_service_header::setHeader('Allow', implode(',', $_t));
+                    $_service_response::setHeader('Access-Control-Allow-Methods', implode(',', $_t));
+                $_service_response::setHeader('Allow', implode(',', $_t));
             }
         } else {
             $_t = '';
@@ -154,16 +157,10 @@ class F3App extends Prefab
                 $_t = implode(',', self::vars('RESPONSE.header.Access-Control-Allow-Methods'));
             elseif (is_string(self::vars('RESPONSE.header.Access-Control-Allow-Methods')))
                 $_t = self::vars('RESPONSE.header.Access-Control-Allow-Methods');
-            if ($_t === '') {
-                if (is_array(self::vars('CONF.response.header.Access-Control-Allow-Methods')))
-                    $_t = implode(',', self::vars('CONF.response.header.Access-Control-Allow-Methods'));
-                elseif (is_string(self::vars('CONF.response.header.Access-Control-Allow-Methods')))
-                    $_t = self::vars('CONF.response.header.Access-Control-Allow-Methods');
-            }
             if ($_t) {
                 if (self::vars('VERB') === 'OPTIONS')
-                    $_service_header::setHeader('Access-Control-Allow-Methods', $_t);
-                $_service_header::setHeader('Allow', $_t);
+                    $_service_response::setHeader('Access-Control-Allow-Methods', $_t);
+                $_service_response::setHeader('Allow', $_t);
             }
         }
 
@@ -172,40 +169,30 @@ class F3App extends Prefab
             $_t = implode(',', self::vars('RESPONSE.header.Access-Control-Allow-Headers'));
         elseif (is_string(self::vars('RESPONSE.header.Access-Control-Allow-Headers')))
             $_t = self::vars('RESPONSE.header.Access-Control-Allow-Headers');
-        if ($_t === '') {
-            if (is_array(self::vars('CONF.response.header.Access-Control-Allow-Headers')))
-                $_t = implode(',', self::vars('CONF.response.header.Access-Control-Allow-Headers'));
-            elseif (is_string(self::vars('CONF.response.header.Access-Control-Allow-Headers')))
-                $_t = self::vars('CONF.response.header.Access-Control-Allow-Headers');
-        }
         if ($_t)
-            $_service_header::setHeader('Access-Control-Allow-Headers', $_t);
+            $_service_response::setHeader('Access-Control-Allow-Headers', $_t);
 
         $_t = false;
-        if (self::vars('CONF.response.header.Access-Control-Allow-Credentials') === true)
-            $_t = true;
         if (self::vars('RESPONSE.header.Access-Control-Allow-Credentials') === true)
             $_t = true;
-        elseif (self::vars('RESPONSE.header.Access-Control-Allow-Credentials') === false)
-            $_t = false;
         if ($_t === true)
-            $_service_header::setHeader('Access-Control-Allow-Credentials', 'true');
+            $_service_response::setHeader('Access-Control-Allow-Credentials', 'true');
 
         $_content_type = '';
         if (self::vars('RESPONSE.header.Content-Type'))
             $_content_type = self::vars('RESPONSE.header.Content-Type');
-        if ($_content_type === '' && self::vars('CONF.response.header.Content-Type'))
-            $_content_type = self::vars('CONF.response.header.Content-Type');
         $_content_type = strtolower($_content_type);
         if ($_content_type)
-            $_service_header::setHeader('Content-Type', $_content_type);
+            $_service_response::setHeader('Content-Type', $_content_type);
 
         if (self::vars('RESPONSE.filename'))
-            $_service_header::setHeader('Content-Disposition', 'attachment; filename="' . self::vars('RESPONSE.filename') . '"');
+            $_service_response::setHeader('Content-Disposition', 'attachment; filename="' . self::vars('RESPONSE.filename') . '"');
 
-        $_service_header::dumpHeaders();
+        //$_service_response->setHeaders('RESPONSE.header');
 
-        return $_service_header::getHeader('Content-Type');
+        $_service_response::dumpHeaders();
+
+        return $_service_response::getHeader('Content-Type');
     }
 
     /**
