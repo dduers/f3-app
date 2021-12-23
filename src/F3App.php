@@ -128,6 +128,7 @@ class F3App extends Prefab
             $_t = false;
         if ($_t === true)
             header('Access-Control-Allow-Credentials: true');
+        else header('Access-Control-Allow-Credentials: false');
 
         $_content_type = '';
         if ($f3_->get('RESPONSE.header.contenttype'))
