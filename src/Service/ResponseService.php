@@ -6,11 +6,13 @@ namespace Dduers\F3App\Service;
 
 use Dduers\F3App\Iface\ServiceInterface;
 use Prefab;
+use Template;
 
 final class ResponseService extends Prefab implements ServiceInterface
 {
     private const DEFAULT_OPTIONS = [
-        'header' => []
+        'header' => [],
+        'body' => ''
     ];
     static private $_service;
     static private array $_options = [];
@@ -33,6 +35,16 @@ final class ResponseService extends Prefab implements ServiceInterface
     {
         self::$_options['header'][$header_][] = $content_;
         return;
+    }
+
+    /**
+     * set response body
+     * @param mixed $body_
+     * @return void
+     */
+    static function setBody($body_): void
+    {
+        self::$_options['body'] = $body_;
     }
 
     /**
@@ -77,6 +89,26 @@ final class ResponseService extends Prefab implements ServiceInterface
                     header($header_ . ': ' . implode(',', $items_), false);
                     break;
             }
+        }
+    }
+
+    /**
+     * output response body
+     * @return void
+     */
+    static function dumpBody(): void
+    {
+        switch (self::getHeader('Content-Type')) {
+            default:
+            case 'application/json':
+                if (is_array(self::$_options['body']))
+                    echo json_encode(self::$_options['body']);
+                if (is_string(self::$_options['body']))
+                    echo self::$_options['body'];
+                break;
+            case 'text/html':
+                echo Template::instance()->render('template.html');
+                break;
         }
     }
 

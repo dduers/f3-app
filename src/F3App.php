@@ -5,10 +5,7 @@ declare(strict_types=1);
 namespace Dduers\F3App;
 
 use Base;
-use Dduers\F3App\Service\ResponseService;
-use Dduers\F3App\Service\SessionService;
 use Prefab;
-use Template;
 
 /**
  * application base controller
@@ -41,6 +38,7 @@ class F3App extends Prefab
      */
     static function beforeroute(Base $f3_): void
     {
+        $_service_session = self::service('session');
         $f3_->set('RESPONSE.header', []);
         $f3_->set('RESPONSE.data', []);
         $f3_->set('PARAMS.vers', $f3_->get('PARAMS.vers') ?: 'v1');
@@ -56,7 +54,7 @@ class F3App extends Prefab
             }
         }
         $f3_->set('LANGUAGE', $f3_->get('PARAMS.lang'));
-        if (!SessionService::instance()::checkToken()) {
+        if (!$_service_session::checkToken()) {
             $f3_->error(401);
             return;
         }
@@ -72,9 +70,8 @@ class F3App extends Prefab
      */
     static function afterroute(Base $f3_): void
     {
-        $_service_response = ResponseService::instance();
-        $_service_session = SessionService::instance();
-
+        $_service_response = self::service('response');
+        $_service_session = self::service('session');
         $_service_response::setHeaders(self::vars('RESPONSE.header'));
         $_controller = self::vars('CONF.namespaces.controller') . '\\' . self::vars('PARAMS.ctrl');
         if (class_exists($_controller)) {
@@ -90,17 +87,9 @@ class F3App extends Prefab
         } 
         if (self::vars('RESPONSE.filename'))
             $_service_response::setHeader('Content-Disposition', 'attachment; filename="' . self::vars('RESPONSE.filename') . '"');
-
+        $_service_response::setBody($f3_->get('RESPONSE.data'));
         $_service_response::dumpHeaders();
-        switch ($_service_response::getHeader('Content-Type')) {
-            default:
-            case 'application/json':
-                echo json_encode($f3_->get('RESPONSE.data') ?? [], ($f3_->get('DEBUG') ? JSON_PRETTY_PRINT : 0));
-                break;
-            case 'text/html':
-                echo Template::instance()->render('template.html');
-                break;
-        }
+        $_service_response::dumpBody();
         $_service_session::storeToken();
         return;
     }
