@@ -128,7 +128,7 @@ class F3App extends Prefab
      */
     static private function responseHeaders(): string
     {
-        $_service_header = self::service('header');
+        $_service_header = self::service('response');
 
         if ($_SERVER['HTTP_ORIGIN'] ?? '') {
             if (is_array(self::vars('CONF.response.header.Access-Control-Allow-Origin')) && in_array($_SERVER['HTTP_ORIGIN'], self::vars('CONF.response.header.Access-Control-Allow-Origin')))
