@@ -104,6 +104,7 @@ class F3App extends Prefab
         }
         if ($_t)
             header('Access-Control-Allow-Methods: ' . $_t);
+        header('Allow: ' . $_t);
 
         $_t = '';
         if (is_array($f3_->get('RESPONSE.header.accesscontrolallowheaders')))
