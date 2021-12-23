@@ -149,7 +149,7 @@ class F3App extends Prefab
                 $_service_response::setHeader('Allow', implode(',', $_t));
             }
         } else {
-            $_t = implode(',', self::vars('RESPONSE.header.Access-Control-Allow-Methods'));
+            $_t = implode(',', self::vars('RESPONSE.header.Access-Control-Allow-Methods') ?? []);
             if ($_t) {
                 if (self::vars('VERB') === 'OPTIONS')
                     $_service_response::setHeader('Access-Control-Allow-Methods', $_t);
@@ -157,7 +157,7 @@ class F3App extends Prefab
             }
         }
 
-        $_t = implode(',', self::vars('RESPONSE.header.Access-Control-Allow-Headers'));
+        $_t = implode(',', self::vars('RESPONSE.header.Access-Control-Allow-Headers') ?? []);
         if ($_t)
             $_service_response::setHeader('Access-Control-Allow-Headers', $_t);
 
