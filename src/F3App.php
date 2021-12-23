@@ -48,9 +48,9 @@ class F3App extends Prefab
         $f3_->set('PARAMS.0', '/' . $f3_->get('PARAMS.ctrl'));
         if (!$f3_->get('PARAMS.lang') || !file_exists($f3_->get('LOCALES') . $f3_->get('PARAMS.lang') . '.ini')) {
             $f3_->set('PARAMS.lang', $f3_->get('FALLBACK'));
-            foreach (explode(',', strtolower($f3_->get('LANGUAGE'))) as $lang) {
-                if (file_exists($f3_->get('LOCALES') . $lang . '.ini')) {
-                    $f3_->set('PARAMS.lang', $lang);
+            foreach (explode(',', strtolower($f3_->get('LANGUAGE'))) as $lang_) {
+                if (file_exists($f3_->get('LOCALES') . $lang_ . '.ini')) {
+                    $f3_->set('PARAMS.lang', $lang_);
                     break;
                 }
             }
@@ -72,8 +72,27 @@ class F3App extends Prefab
      */
     static function afterroute(Base $f3_): void
     {
-        $_content_type = self::responseHeaders();
-        switch ($_content_type) {
+        $_service_response = ResponseService::instance();
+        $_service_session = SessionService::instance();
+
+        $_service_response::setHeaders(self::vars('RESPONSE.header'));
+        $_controller = self::vars('CONF.namespaces.controller') . '\\' . self::vars('PARAMS.ctrl');
+        if (class_exists($_controller)) {
+            $_t = [];
+            foreach (['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT'] as $method_)
+                if (method_exists($_controller, strtolower($method_)))
+                    $_t[] = $method_;
+            if (count($_t)) {
+                if (self::vars('VERB') === 'OPTIONS')
+                    $_service_response::setHeader('Access-Control-Allow-Methods', implode(',', $_t));
+                $_service_response::setHeader('Allow', implode(',', $_t));
+            }
+        } 
+        if (self::vars('RESPONSE.filename'))
+            $_service_response::setHeader('Content-Disposition', 'attachment; filename="' . self::vars('RESPONSE.filename') . '"');
+
+        $_service_response::dumpHeaders();
+        switch ($_service_response::getHeader('Content-Type')) {
             default:
             case 'application/json':
                 echo json_encode($f3_->get('RESPONSE.data') ?? [], ($f3_->get('DEBUG') ? JSON_PRETTY_PRINT : 0));
@@ -82,7 +101,7 @@ class F3App extends Prefab
                 echo Template::instance()->render('template.html');
                 break;
         }
-        SessionService::instance()::storeToken();
+        $_service_session::storeToken();
         return;
     }
 
@@ -116,61 +135,6 @@ class F3App extends Prefab
     {
         self::$_f3->error($code_);
         return;
-    }
-
-    /**
-     * output response headers
-     * @return string final content type
-     */
-    static private function responseHeaders(): string
-    {
-        $_service_response = ResponseService::instance();
-        $_service_response->setHeaders(self::vars('RESPONSE.header'));
-
-        $_controller = self::vars('CONF.namespaces.controller') . '\\' . self::vars('PARAMS.ctrl');
-        if (class_exists($_controller)) {
-            $_t = [];
-            foreach (['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT'] as $method_)
-                if (method_exists($_controller, strtolower($method_)))
-                    $_t[] = $method_;
-            if (count($_t)) {
-                if (self::vars('VERB') === 'OPTIONS')
-                    $_service_response::setHeader('Access-Control-Allow-Methods', implode(',', $_t));
-                $_service_response::setHeader('Allow', implode(',', $_t));
-            }
-        } 
-        
-        /*
-        else {
-            $_t = implode(',', self::vars('RESPONSE.header.Access-Control-Allow-Methods') ?? []);
-            if ($_t) {
-                if (self::vars('VERB') === 'OPTIONS')
-                    $_service_response::setHeader('Access-Control-Allow-Methods', $_t);
-                $_service_response::setHeader('Allow', $_t);
-            }
-        }
-        $_t = implode(',', self::vars('RESPONSE.header.Access-Control-Allow-Headers') ?? []);
-        if ($_t)
-            $_service_response::setHeader('Access-Control-Allow-Headers', $_t);
-
-        $_t = false;
-        if ((self::vars('RESPONSE.header.Access-Control-Allow-Credentials')[0] ?? false) === true)
-            $_t = true;
-        if ($_t === true)
-            $_service_response::setHeader('Access-Control-Allow-Credentials', 'true');
-        $_content_type = '';
-        if (self::vars('RESPONSE.header.Content-Type'))
-            $_content_type = self::vars('RESPONSE.header.Content-Type');
-        $_content_type = strtolower($_content_type);
-        if ($_content_type)
-            $_service_response::setHeader('Content-Type', $_content_type);
-        */
-
-        if (self::vars('RESPONSE.filename'))
-            $_service_response::setHeader('Content-Disposition', 'attachment; filename="' . self::vars('RESPONSE.filename') . '"');
-
-        $_service_response::dumpHeaders();
-        return $_service_response::getHeader('Content-Type');
     }
 
     /**

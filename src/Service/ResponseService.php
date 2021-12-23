@@ -38,6 +38,7 @@ final class ResponseService extends Prefab implements ServiceInterface
     /**
      * set headers in batch
      * @param array $headers_
+     * @return void
      */
     static function setHeaders(array $headers_): void
     {
