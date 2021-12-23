@@ -23,12 +23,22 @@ final class ResponseService extends Prefab implements ServiceInterface
             self::$_options['header']['Access-Control-Allow-Credentials'][0] = 'true';
     }
 
-    static function setHeader(string $header_, string $content_)
+    /**
+     * set response header
+     * @param string $header_
+     * @param string $content_
+     * @return void
+     */
+    static function setHeader(string $header_, string $content_): void
     {
         self::$_options['header'][$header_][] = $content_;
         return;
     }
 
+    /**
+     * set headers in batch
+     * @param array $headers_
+     */
     static function setHeaders(array $headers_): void
     {
         foreach ($headers_ as $header_ => $items_)
@@ -36,16 +46,37 @@ final class ResponseService extends Prefab implements ServiceInterface
                 self::setHeader($header_, $content_);
     }
 
+    /**
+     * get header
+     * @param string $header_
+     * @return string
+     */
     static function getHeader(string $header_): string
     {
         return implode(',', self::$_options['header'][$header_]);
     }
 
+    /**
+     * output response headers
+     * @return void
+     */
     static function dumpHeaders(): void
     {
-        //$_service_response::setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
-        foreach (self::$_options['header'] as $header_ => $items_)
-            header($header_ . ': ' . implode(',', $items_), false);
+        foreach (self::$_options['header'] as $header_ => $items_) {
+            switch ($header_) {
+                case 'Access-Control-Allow-Origin':
+                    if (in_array($_SERVER['HTTP_ORIGIN'], $items_))
+                        header($header_ . ': ' . $_SERVER['HTTP_ORIGIN'], false);
+                    break;
+                case 'Set-Cookie':
+                    foreach ($items_ as $key_ => $value_)
+                        header($header_ . ': ' . $value_, false);
+                    break;
+                default:
+                    header($header_ . ': ' . implode(',', $items_), false);
+                    break;
+            }
+        }
     }
 
     /**
