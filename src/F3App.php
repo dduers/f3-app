@@ -82,6 +82,14 @@ class F3App extends Prefab
                 header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
         }
 
+        $_t = [];
+        foreach (['GET','POST','PUT','PATCH','DELETE','HEAD','OPTIONS','TRACE','CONNECT'] as $method_)
+            if (method_exists(self::class, strtolower($method_)))
+                $_t[] = $method_;
+        if (count($_t))
+            header('Access-Control-Allow-Methods: ' . implode(',', $_t));
+
+        /*
         $_t = '';
         if (is_array($f3_->get('RESPONSE.header.accesscontrolallowmethods')))
             $_t = implode(',', $f3_->get('RESPONSE.header.accesscontrolallowmethods'));
@@ -95,6 +103,7 @@ class F3App extends Prefab
         }
         if ($_t)
             header('Access-Control-Allow-Methods: ' . $_t);
+            */
 
         $_t = '';
         if (is_array($f3_->get('RESPONSE.header.accesscontrolallowheaders')))
@@ -123,10 +132,8 @@ class F3App extends Prefab
         $_content_type = '';
         if ($f3_->get('RESPONSE.header.contenttype'))
             $_content_type = $f3_->get('RESPONSE.header.contenttype');
-        if ($_content_type === '') {
-            if ($f3_->get('CONF.header.contenttype'))
-                $_content_type = $f3_->get('CONF.header.contenttype');
-        }
+        if ($_content_type === '' && $f3_->get('CONF.header.contenttype'))
+            $_content_type = $f3_->get('CONF.header.contenttype');
         $_content_type = strtolower($_content_type);
         if ($_content_type)
             header('Content-Type: ' . $_content_type);
