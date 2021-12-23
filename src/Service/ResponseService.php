@@ -47,6 +47,7 @@ final class ResponseService extends Prefab implements ServiceInterface
 
     static function dumpHeaders(): void
     {
+        //$_service_response::setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
         foreach (self::$_options['header'] as $header_ => $items_)
             if (is_array($items_))
                 foreach ($items_ as $key_ => $content_)

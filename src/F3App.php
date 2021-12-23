@@ -127,8 +127,6 @@ class F3App extends Prefab
         $_service_response = ResponseService::instance();
         $_service_response->setHeaders(self::vars('RESPONSE.header'));
 
-        //$_service_response::setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
-
         $_controller = self::vars('CONF.namespaces.controller') . '\\' . self::vars('PARAMS.ctrl');
         if (class_exists($_controller)) {
             $_t = [];
@@ -166,13 +164,13 @@ class F3App extends Prefab
         $_content_type = strtolower($_content_type);
         if ($_content_type)
             $_service_response::setHeader('Content-Type', $_content_type);
+        */
 
         if (self::vars('RESPONSE.filename'))
             $_service_response::setHeader('Content-Disposition', 'attachment; filename="' . self::vars('RESPONSE.filename') . '"');
-        */
 
         $_service_response::dumpHeaders();
-        return end($_service_response::getHeader('Content-Type'));
+        return $_service_response::getHeader('Content-Type');
     }
 
     /**
