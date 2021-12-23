@@ -10,7 +10,7 @@ use Prefab;
 final class ResponseService extends Prefab implements ServiceInterface
 {
     private const DEFAULT_OPTIONS = [
-        'headers' => []
+        'header' => []
     ];
     static private $_service;
     static private $_f3;
@@ -23,18 +23,18 @@ final class ResponseService extends Prefab implements ServiceInterface
 
     static function setHeader(string $header_, string $content_)
     {
-        self::$_options['headers'][$header_] = $content_;
+        self::$_options['header'][$header_] = $content_;
         return;
     }
 
     static function getHeader($header_): string
     {
-        return self::$_options['headers'][$header_] ?? '';
+        return self::$_options['header'][$header_] ?? '';
     }
 
     static function dumpHeaders(): void
     {
-        foreach (self::$_options['headers'] as $header_ => $content_)
+        foreach (self::$_options['header'] as $header_ => $content_)
             header($header_, $content_);
     }
 
