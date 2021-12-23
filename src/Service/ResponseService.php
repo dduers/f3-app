@@ -40,9 +40,9 @@ final class ResponseService extends Prefab implements ServiceInterface
                 self::setHeader($header_, $content_);
     }
 
-    static function getHeader(string $header_): array
+    static function getHeader(string $header_)
     {
-        return self::$_options['header'][$header_] ?? [];
+        return self::$_options['header'][$header_];
     }
 
     static function dumpHeaders(): void
