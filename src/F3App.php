@@ -127,8 +127,7 @@ class F3App extends Prefab
         $_service_response = ResponseService::instance();
         $_service_response->setHeaders(self::vars('RESPONSE.header'));
 
-        if (($_SERVER['HTTP_ORIGIN'] ?? '') && in_array($_SERVER['HTTP_ORIGIN'], self::vars('RESPONSE.header.Access-Control-Allow-Origin') ?? []))
-            $_service_response::setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
+        //$_service_response::setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
 
         $_controller = self::vars('CONF.namespaces.controller') . '\\' . self::vars('PARAMS.ctrl');
         if (class_exists($_controller)) {
