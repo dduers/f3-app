@@ -20,16 +20,12 @@ final class ResponseService extends Prefab implements ServiceInterface
         self::$_options = array_merge(self::DEFAULT_OPTIONS, $options_);
 
         if ((self::$_options['header']['Access-Control-Allow-Credentials'][0] ?? false))
-            self::$_options['header']['Access-Control-Allow-Credentials'][0] = true;
+            self::$_options['header']['Access-Control-Allow-Credentials'][0] = 'true';
     }
 
-    static function setHeader(string $header_, $content_)
+    static function setHeader(string $header_, string $content_)
     {
-        if (is_string($content_))
-            self::$_options['header'][$header_][] = $content_;
-        elseif (is_array($content_))
-            foreach ($content_ as $key_ => $value_)
-                self::$_options['header'][$header_][] = $value_;
+        self::$_options['header'][$header_][] = $content_;
         return;
     }
 
@@ -40,19 +36,16 @@ final class ResponseService extends Prefab implements ServiceInterface
                 self::setHeader($header_, $content_);
     }
 
-    static function getHeader(string $header_)
+    static function getHeader(string $header_): string
     {
-        return self::$_options['header'][$header_];
+        return implode(',', self::$_options['header'][$header_]);
     }
 
     static function dumpHeaders(): void
     {
         //$_service_response::setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
         foreach (self::$_options['header'] as $header_ => $items_)
-            if (is_array($items_))
-                foreach ($items_ as $key_ => $content_)
-                    header($header_ . ': ' . $content_, false);
-            else header($header_ . ': ' . $items_, false);
+            header($header_ . ': ' . implode(',', $items_), false);
     }
 
     /**
