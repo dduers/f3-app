@@ -82,15 +82,18 @@ class F3App extends Prefab
                 header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
         }
 
-        /*
         $_t = [];
-        foreach (['GET','POST','PUT','PATCH','DELETE','HEAD','OPTIONS','TRACE','CONNECT'] as $method_)
-            if (method_exists(self::class, strtolower($method_)))
+        $_controller = self::vars('CONF.namespaces.controller') . '\\' . self::vars('PARAMS.ctrl');
+        foreach (['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT'] as $method_)
+            if (method_exists($_controller, strtolower($method_)))
                 $_t[] = $method_;
-        if (count($_t))
-            header('Access-Control-Allow-Methods: ' . implode(', ', $_t));
-        */
+        if (count($_t)) {
+            if (self::vars('VERB') === 'OPTIONS')
+                header('Access-Control-Allow-Methods: ' . implode(',', $_t));
+            header('Allow: ' . implode(',', $_t));
+        }
 
+        /*
         $_t = '';
         if (is_array($f3_->get('RESPONSE.header.accesscontrolallowmethods')))
             $_t = implode(',', $f3_->get('RESPONSE.header.accesscontrolallowmethods'));
@@ -105,6 +108,7 @@ class F3App extends Prefab
         if ($_t)
             header('Access-Control-Allow-Methods: ' . $_t);
         header('Allow: ' . $_t);
+        */
 
         $_t = '';
         if (is_array($f3_->get('RESPONSE.header.accesscontrolallowheaders')))
@@ -129,7 +133,6 @@ class F3App extends Prefab
             $_t = false;
         if ($_t === true)
             header('Access-Control-Allow-Credentials: true');
-        else header('Access-Control-Allow-Credentials: false');
 
         $_content_type = '';
         if ($f3_->get('RESPONSE.header.contenttype'))
