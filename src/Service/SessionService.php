@@ -19,6 +19,10 @@ final class SessionService extends Prefab implements ServiceInterface
         'name' => 'PHPSESSID',
         'table' => 'sessions',
         'key' => '_token',
+        'csrf' => [
+            'enable' => 0,
+            'methods' => ''
+        ],
         'cookie' => [
             'options' => [
                 'lifetime' => 0,
@@ -107,6 +111,8 @@ final class SessionService extends Prefab implements ServiceInterface
      */
     static function storeToken(): void
     {
+        if ((int)self::$_options['csrf']['enable'] !== 1)
+            return;
         self::$_f3->set('SESSION.' . self::$_options['key'], self::$_token);
     }
 
@@ -116,6 +122,8 @@ final class SessionService extends Prefab implements ServiceInterface
      */
     static function checkToken(): bool
     {
+        if ((int)self::$_options['csrf']['enable'] !== 1 || !in_array(self::$_f3->get('VERB'), self::$_options['csrf']['methods']))
+            return true;
         $_token_server = self::$_f3->get('SESSION.' . self::$_options['key']);
         $_token_client = (string)(self::$_f3->get('POST.' . self::$_options['key']) ?? self::$_f3->get('PUT.' . self::$_options['key']) ?? self::$_f3->get('GET.' . self::$_options['key']) ?? '');
         if (!$_token_client || !$_token_server || $_token_client !== $_token_server)

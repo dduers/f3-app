@@ -6,6 +6,7 @@ namespace Dduers\F3App;
 
 use Base;
 use Dduers\F3App\Service\ResponseService;
+use Dduers\F3App\Service\SessionService;
 use Prefab;
 use Template;
 
@@ -40,13 +41,11 @@ class F3App extends Prefab
      */
     static function beforeroute(Base $f3_): void
     {
+        $f3_->set('RESPONSE.header', []);
+        $f3_->set('RESPONSE.data', []);
         $f3_->set('PARAMS.vers', $f3_->get('PARAMS.vers') ?: 'v1');
         $f3_->set('PARAMS.ctrl', $f3_->get('PARAMS.ctrl') ?: 'home');
         $f3_->set('PARAMS.0', '/' . $f3_->get('PARAMS.ctrl'));
-
-        $f3_->set('RESPONSE.header', []);
-        $f3_->set('RESPONSE.data', []);
-
         if (!$f3_->get('PARAMS.lang') || !file_exists($f3_->get('LOCALES') . $f3_->get('PARAMS.lang') . '.ini')) {
             $f3_->set('PARAMS.lang', $f3_->get('FALLBACK'));
             foreach (explode(',', strtolower($f3_->get('LANGUAGE'))) as $lang) {
@@ -57,16 +56,10 @@ class F3App extends Prefab
             }
         }
         $f3_->set('LANGUAGE', $f3_->get('PARAMS.lang'));
-
-        if (
-            (int)$f3_->get('CONF.csrf.enable') === 1
-            && in_array($f3_->get('VERB'), $f3_->get('CONF.csrf.methods'))
-            && !self::service('session')::checkToken()
-        ) {
+        if (!SessionService::instance()::checkToken()) {
             $f3_->error(401);
             return;
         }
-
         return;
     }
 
@@ -89,8 +82,7 @@ class F3App extends Prefab
                 echo Template::instance()->render('template.html');
                 break;
         }
-        if ((int)$f3_->get('CONF.csrf.enable') === 1)
-            self::service('session')::storeToken();
+        SessionService::instance()::storeToken();
         return;
     }
 
@@ -133,8 +125,9 @@ class F3App extends Prefab
     static private function responseHeaders(): string
     {
         $_service_response = ResponseService::instance();
+        $_service_response->setHeaders(self::vars('RESPONSE.header'));
 
-        if (($_SERVER['HTTP_ORIGIN'] ?? '') && in_array($_SERVER['HTTP_ORIGIN'], self::vars('RESPONSE.response.header.Access-Control-Allow-Origin')))
+        if (($_SERVER['HTTP_ORIGIN'] ?? '') && in_array($_SERVER['HTTP_ORIGIN'], self::vars('RESPONSE.header.Access-Control-Allow-Origin') ?? []))
             $_service_response::setHeader('Access-Control-Allow-Origin', $_SERVER['HTTP_ORIGIN']);
 
         $_controller = self::vars('CONF.namespaces.controller') . '\\' . self::vars('PARAMS.ctrl');
@@ -148,7 +141,10 @@ class F3App extends Prefab
                     $_service_response::setHeader('Access-Control-Allow-Methods', implode(',', $_t));
                 $_service_response::setHeader('Allow', implode(',', $_t));
             }
-        } else {
+        } 
+        
+        /*
+        else {
             $_t = implode(',', self::vars('RESPONSE.header.Access-Control-Allow-Methods') ?? []);
             if ($_t) {
                 if (self::vars('VERB') === 'OPTIONS')
@@ -156,17 +152,15 @@ class F3App extends Prefab
                 $_service_response::setHeader('Allow', $_t);
             }
         }
-
         $_t = implode(',', self::vars('RESPONSE.header.Access-Control-Allow-Headers') ?? []);
         if ($_t)
             $_service_response::setHeader('Access-Control-Allow-Headers', $_t);
 
         $_t = false;
-        if (self::vars('RESPONSE.header.Access-Control-Allow-Credentials') === true)
+        if ((self::vars('RESPONSE.header.Access-Control-Allow-Credentials')[0] ?? false) === true)
             $_t = true;
         if ($_t === true)
             $_service_response::setHeader('Access-Control-Allow-Credentials', 'true');
-
         $_content_type = '';
         if (self::vars('RESPONSE.header.Content-Type'))
             $_content_type = self::vars('RESPONSE.header.Content-Type');
@@ -176,10 +170,9 @@ class F3App extends Prefab
 
         if (self::vars('RESPONSE.filename'))
             $_service_response::setHeader('Content-Disposition', 'attachment; filename="' . self::vars('RESPONSE.filename') . '"');
+        */
 
-        //$_service_response->setHeaders('RESPONSE.header');
         $_service_response::dumpHeaders();
-
         return end($_service_response::getHeader('Content-Type'));
     }
 

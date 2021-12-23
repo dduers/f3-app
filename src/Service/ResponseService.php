@@ -28,8 +28,9 @@ final class ResponseService extends Prefab implements ServiceInterface
 
     static function setHeaders(array $headers_): void
     {
-        foreach ($headers_ as $header_ => $content_)
-            self::setHeader($header_, $content_);
+        foreach ($headers_ as $header_ => $items_)
+            foreach ($items_ as $key_ => $content_)
+                self::setHeader($header_, $content_);
     }
 
     static function getHeader(string $header_): array
