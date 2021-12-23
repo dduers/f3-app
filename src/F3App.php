@@ -87,7 +87,7 @@ class F3App extends Prefab
             if (method_exists(self::class, strtolower($method_)))
                 $_t[] = $method_;
         if (count($_t))
-            header('Access-Control-Allow-Methods: ' . implode(',', $_t));
+            header('Access-Control-Allow-Methods: ' . implode(', ', $_t));
 
         /*
         $_t = '';
