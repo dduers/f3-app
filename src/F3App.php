@@ -75,78 +75,8 @@ class F3App extends Prefab
      */
     static function afterroute(Base $f3_): void
     {
-        if ($_SERVER['HTTP_ORIGIN'] ?? '') {
-            if (is_array($f3_->get('CONF.header.accesscontrolalloworigin')) && in_array($_SERVER['HTTP_ORIGIN'], $f3_->get('CONF.header.accesscontrolalloworigin')))
-                header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
-            elseif (is_string($f3_->get('CONF.header.accesscontrolalloworigin')) && $_SERVER['HTTP_ORIGIN'] === $f3_->get('CONF.header.accesscontrolalloworigin'))
-                header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
-        }
-
-        $_t = [];
-        $_controller = self::vars('CONF.namespaces.controller') . '\\' . self::vars('PARAMS.ctrl');
-        foreach (['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT'] as $method_)
-            if (method_exists($_controller, strtolower($method_)))
-                $_t[] = $method_;
-        if (count($_t)) {
-            if (self::vars('VERB') === 'OPTIONS')
-                header('Access-Control-Allow-Methods: ' . implode(',', $_t));
-            header('Allow: ' . implode(',', $_t));
-        }
-
-        /*
-        $_t = '';
-        if (is_array($f3_->get('RESPONSE.header.accesscontrolallowmethods')))
-            $_t = implode(',', $f3_->get('RESPONSE.header.accesscontrolallowmethods'));
-        elseif (is_string($f3_->get('RESPONSE.header.accesscontrolallowmethods')))
-            $_t = $f3_->get('RESPONSE.header.accesscontrolallowmethods');
-        if ($_t === '') {
-            if (is_array($f3_->get('CONF.header.accesscontrolallowmethods')))
-                $_t = implode(',', $f3_->get('CONF.header.accesscontrolallowmethods'));
-            elseif (is_string($f3_->get('CONF.header.accesscontrolallowmethods')))
-                $_t = $f3_->get('CONF.header.accesscontrolallowmethods');
-        }
-        if ($_t)
-            header('Access-Control-Allow-Methods: ' . $_t);
-        header('Allow: ' . $_t);
-        */
-
-        $_t = '';
-        if (is_array($f3_->get('RESPONSE.header.accesscontrolallowheaders')))
-            $_t = implode(',', $f3_->get('RESPONSE.header.accesscontrolallowheaders'));
-        elseif (is_string($f3_->get('RESPONSE.header.accesscontrolallowheaders')))
-            $_t = $f3_->get('RESPONSE.header.accesscontrolallowheaders');
-        if ($_t === '') {
-            if (is_array($f3_->get('CONF.header.accesscontrolallowheaders')))
-                $_t = implode(',', $f3_->get('CONF.header.accesscontrolallowheaders'));
-            elseif (is_string($f3_->get('CONF.header.accesscontrolallowheaders')))
-                $_t = $f3_->get('CONF.header.accesscontrolallowheaders');
-        }
-        if ($_t)
-            header('Access-Control-Allow-Headers: ' . $_t);
-
-        $_t = false;
-        if ($f3_->get('CONF.header.accesscontrolallowcredentials') === true)
-            $_t = true;
-        if ($f3_->get('RESPONSE.header.accesscontrolallowcredentials') === true)
-            $_t = true;
-        elseif ($f3_->get('RESPONSE.header.accesscontrolallowcredentials') === false)
-            $_t = false;
-        if ($_t === true)
-            header('Access-Control-Allow-Credentials: true');
-
-        $_content_type = '';
-        if ($f3_->get('RESPONSE.header.contenttype'))
-            $_content_type = $f3_->get('RESPONSE.header.contenttype');
-        if ($_content_type === '' && $f3_->get('CONF.header.contenttype'))
-            $_content_type = $f3_->get('CONF.header.contenttype');
-        $_content_type = strtolower($_content_type);
-        if ($_content_type)
-            header('Content-Type: ' . $_content_type);
-
-        if ($f3_->get('RESPONSE.filename'))
-            header('Content-Disposition: attachment; filename="' . $f3_->get('RESPONSE.filename') . '"');
-
-        switch ($_content_type ?: '') {
+        $_content_type = self::responseHeaders();
+        switch ($_content_type) {
             default:
             case 'application/json':
                 echo json_encode($f3_->get('RESPONSE.data') ?? [], ($f3_->get('DEBUG') ? JSON_PRETTY_PRINT : 0));
@@ -155,10 +85,8 @@ class F3App extends Prefab
                 echo Template::instance()->render('template.html');
                 break;
         }
-
         if ((int)$f3_->get('CONF.csrf.enable') === 1)
             self::service('session')::storeToken();
-
         return;
     }
 
@@ -183,10 +111,97 @@ class F3App extends Prefab
         return true;
     }
 
+    /**
+     * issue http error
+     * @param int $code_
+     * @return void
+     */
     static function error(int $code_): void
     {
         self::$_f3->error($code_);
         return;
+    }
+
+    /**
+     * output response headers
+     * @return string final content type
+     */
+    static private function responseHeaders(): string
+    {
+        if ($_SERVER['HTTP_ORIGIN'] ?? '') {
+            if (is_array(self::vars('CONF.header.accesscontrolalloworigin')) && in_array($_SERVER['HTTP_ORIGIN'], self::vars('CONF.header.accesscontrolalloworigin')))
+                header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
+            elseif (is_string(self::vars('CONF.header.accesscontrolalloworigin')) && $_SERVER['HTTP_ORIGIN'] === self::vars('CONF.header.accesscontrolalloworigin'))
+                header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
+        }
+
+        $_controller = self::vars('CONF.namespaces.controller') . '\\' . self::vars('PARAMS.ctrl');
+        if (class_exists($_controller)) {
+            $_t = [];
+            foreach (['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT'] as $method_)
+                if (method_exists($_controller, strtolower($method_)))
+                    $_t[] = $method_;
+            if (count($_t)) {
+                if (self::vars('VERB') === 'OPTIONS')
+                    header('Access-Control-Allow-Methods: ' . implode(',', $_t));
+                header('Allow: ' . implode(',', $_t));
+            }
+        } else {
+            $_t = '';
+            if (is_array(self::vars('RESPONSE.header.accesscontrolallowmethods')))
+                $_t = implode(',', self::vars('RESPONSE.header.accesscontrolallowmethods'));
+            elseif (is_string(self::vars('RESPONSE.header.accesscontrolallowmethods')))
+                $_t = self::vars('RESPONSE.header.accesscontrolallowmethods');
+            if ($_t === '') {
+                if (is_array(self::vars('CONF.header.accesscontrolallowmethods')))
+                    $_t = implode(',', self::vars('CONF.header.accesscontrolallowmethods'));
+                elseif (is_string(self::vars('CONF.header.accesscontrolallowmethods')))
+                    $_t = self::vars('CONF.header.accesscontrolallowmethods');
+            }
+            if ($_t) {
+                if (self::vars('VERB') === 'OPTIONS')
+                    header('Access-Control-Allow-Methods: ' . $_t);
+                header('Allow: ' . $_t);
+            }
+        }
+
+        $_t = '';
+        if (is_array(self::vars('RESPONSE.header.accesscontrolallowheaders')))
+            $_t = implode(',', self::vars('RESPONSE.header.accesscontrolallowheaders'));
+        elseif (is_string(self::vars('RESPONSE.header.accesscontrolallowheaders')))
+            $_t = self::vars('RESPONSE.header.accesscontrolallowheaders');
+        if ($_t === '') {
+            if (is_array(self::vars('CONF.header.accesscontrolallowheaders')))
+                $_t = implode(',', self::vars('CONF.header.accesscontrolallowheaders'));
+            elseif (is_string(self::vars('CONF.header.accesscontrolallowheaders')))
+                $_t = self::vars('CONF.header.accesscontrolallowheaders');
+        }
+        if ($_t)
+            header('Access-Control-Allow-Headers: ' . $_t);
+
+        $_t = false;
+        if (self::vars('CONF.header.accesscontrolallowcredentials') === true)
+            $_t = true;
+        if (self::vars('RESPONSE.header.accesscontrolallowcredentials') === true)
+            $_t = true;
+        elseif (self::vars('RESPONSE.header.accesscontrolallowcredentials') === false)
+            $_t = false;
+        if ($_t === true)
+            header('Access-Control-Allow-Credentials: true');
+
+        $_content_type = '';
+        if (self::vars('RESPONSE.header.contenttype'))
+            $_content_type = self::vars('RESPONSE.header.contenttype');
+        if ($_content_type === '' && self::vars('CONF.header.contenttype'))
+            $_content_type = self::vars('CONF.header.contenttype');
+        $_content_type = strtolower($_content_type);
+        if ($_content_type)
+            header('Content-Type: ' . $_content_type);
+
+        if (self::vars('RESPONSE.filename'))
+            header('Content-Disposition: attachment; filename="' . self::vars('RESPONSE.filename') . '"');
+
+        return $_content_type;
     }
 
     /**
