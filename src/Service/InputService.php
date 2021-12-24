@@ -13,7 +13,7 @@ final class InputService extends Prefab implements ServiceInterface
     private const DEFAULT_OPTIONS = [
         'sanitizer' => [
             'enable' => 0,
-            'variables' => [],
+            'method' => 'encode',
             'exclude' => []
         ]
     ];
@@ -25,10 +25,8 @@ final class InputService extends Prefab implements ServiceInterface
     {
         self::$_f3 = Base::instance();
         self::$_options = array_merge(self::DEFAULT_OPTIONS, $options_);
-
         foreach (getallheaders() as $header_ => $value_)
             self::$_request_headers[$header_] = $value_;
-
         self::parseInput();
         if ((int)self::$_options['sanitizer']['enable'] === 1)
             self::sanitizeInput();
@@ -78,32 +76,44 @@ final class InputService extends Prefab implements ServiceInterface
      * sanitize array of user inputs
      * @param array $subject_ key => pairs to sanitize
      * @param string $exclude_ exclude keys from sanitation
+     * @param string $method_
+     * @return array
      */
-    static function sanitize(array $subject_, array $exclude_ = [])
+    static function sanitize(array $subject_, array $exclude_ = [], string $method_ = ''): array
     {
         $_result = $subject_;
         foreach ($subject_ as $key_ => $value_) {
             if (in_array($key_, $exclude_))
                 continue;
-            $_result[$key_] = self::$_f3->clean($value_);
+            $_result[$key_] = $method_ === 'clean' ? self::$_f3->clean($value_) : self::$_f3->encode($value_);
         }
         return array_filter($_result);
     }
 
     /**
-     * sanitize input data (strip tags)
+     * sanitize input data
      * @return void
      */
     static function sanitizeInput(): void
     {
-        switch (self::$_f3->get('VERB')) {
-            case 'POST':
-                self::$_f3->set('POST', self::sanitize(self::$_f3->get('POST'), self::$_options['sanitizer']['exclude'] ?? []));
-                break;
-            case 'PUT':
-                self::$_f3->set('PUT', self::sanitize(self::$_f3->get('PUT'), self::$_options['sanitizer']['exclude'] ?? []));
-                break;
-        }
+        if (self::$_f3->get('GET'))
+            self::$_f3->set('GET', self::sanitize(
+                self::$_f3->get('GET'),
+                [],
+                self::$_options['sanitizer']['method']
+            ));
+        if (self::$_f3->get('POST'))
+            self::$_f3->set('POST', self::sanitize(
+                self::$_f3->get('POST'),
+                self::$_options['sanitizer']['exclude'] ?? [],
+                self::$_options['sanitizer']['method']
+            ));
+        if (self::$_f3->get('PUT'))
+            self::$_f3->set('PUT', self::sanitize(
+                self::$_f3->get('PUT'),
+                self::$_options['sanitizer']['exclude'] ?? [],
+                self::$_options['sanitizer']['method']
+            ));
         return;
     }
 
