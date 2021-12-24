@@ -16,9 +16,8 @@ class F3App extends Prefab
     static private array $_service = [];
 
     /**
-     * class constructor
-     * - load application configuration
-     * - initialization of class properties
+     * class constructor:
+     * load application configuration and init services
      * @param string $config_path_
      */
     function __construct(string $config_path_ = '../config/')
@@ -30,20 +29,14 @@ class F3App extends Prefab
     }
 
     /**
-     * routing pre processor
-     * - init important variables
-     * - csrf check
+     * routing pre processor:
+     * init important variables and csrf check
      * @param Base $f3_
      * @return void
      */
     static function beforeroute(Base $f3_): void
     {
         $_session = self::service('session');
-        $f3_->set('RESPONSE.header', []);
-        $f3_->set('RESPONSE.data', []);
-        //$f3_->set('PARAMS.vers', $f3_->get('PARAMS.vers') ?: 'v1');
-        //$f3_->set('PARAMS.ctrl', $f3_->get('PARAMS.ctrl') ?: 'home');
-        //$f3_->set('PARAMS.0', '/' . $f3_->get('PARAMS.ctrl'));
         if (!$f3_->get('PARAMS.lang') || !file_exists($f3_->get('LOCALES') . $f3_->get('PARAMS.lang') . '.ini')) {
             $f3_->set('PARAMS.lang', $f3_->get('FALLBACK'));
             foreach (explode(',', strtolower($f3_->get('LANGUAGE'))) as $lang_) {
@@ -60,9 +53,8 @@ class F3App extends Prefab
     }
 
     /**
-     * routing post processor
-     * - set response headers
-     * - output response data
+     * routing post processor: 
+     * output response headers and data, store new csrf token to session
      * @param Base $f3_
      * @return void
      */
@@ -70,7 +62,7 @@ class F3App extends Prefab
     {
         $_response = self::service('response');
         $_session = self::service('session');
-        $_response::setHeaders($f3_->get('RESPONSE.header'));
+        $_response::setHeaders($f3_->get('RESPONSE.header') ?? []);
         $_controller = $f3_->get('CONF.namespaces.controller') . '\\' . $f3_->get('PARAMS.ctrl');
         if (class_exists($_controller)) {
             $_t = [];
@@ -95,7 +87,7 @@ class F3App extends Prefab
     /**
      * custom f3 framework error handler
      * @param Base $f3_
-     * @return bool true = error handled, false = fallback to default f3 error handler
+     * @return bool true = error handled / false = fallback to default handler
      */
     static function onerror(Base $f3_): bool
     {
