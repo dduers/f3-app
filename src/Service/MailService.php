@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Dduers\F3App\Service;
 
-use Base;
 use Prefab;
 use SMTP;
 use Dduers\F3App\Iface\ServiceInterface;
@@ -22,17 +21,15 @@ final class MailService extends Prefab implements ServiceInterface
             'email' => 'noreply@localhost',
             'name' => ''
         ],
-        'mime' => 'text/html'
+        'mime' => 'text/html',
+        'charset' => 'UTF-8'
     ];
     static private $_service;
     static private array $_options = [];
-    static private Base $_f3;
 
     function __construct(array $options_)
     {
-        self::$_f3 = Base::instance();
         self::$_options = array_merge(self::DEFAULT_OPTIONS, $options_);
-
         if ((int)self::$_options['enable'] === 1)
             self::$_service = new SMTP(
                 self::$_options['host'],
@@ -41,15 +38,6 @@ final class MailService extends Prefab implements ServiceInterface
                 self::$_options['user'],
                 self::$_options['pass']
             );
-    }
-
-    /**
-     * get service instance
-     * @return SMTP|null
-     */
-    static function getService()
-    {
-        return self::$_service;
     }
 
     /**
@@ -70,32 +58,32 @@ final class MailService extends Prefab implements ServiceInterface
      * @param array $attach_ (optional) array of filenames
      * @return bool true on success, false on error
      */
-    static function sendMail(array $to_, string $subject_, string $message_, array $from_ = [], array $attach_ = []): bool
+    static function sendMail(array $to_, string $subject_, string $message_, array $from_ = [], array $attach_ = [], string $charset_ = ''): bool
     {
         if (!(int)self::$_options['enable'] === 1)
             return false;
 
-        self::$_service->set('Content-type', self::$_options['mime'] . '; charset=' . self::$_f3->get('ENCODING'));
+        $_charset = $charset_ ?: self::$_options['charset'];
 
         $_toaddr = [];
         foreach ($to_ as $email_ => $name_)
-            $_toaddr[] = '"'. $name_ . '"' . ' <' . $email_ . '>';
+            $_toaddr[] = '"' . $name_ . '"' . ' <' . $email_ . '>';
         $_toaddr = implode(', ', $_toaddr);
 
         $_fromaddr = [];
         foreach ($from_ as $email_ => $name_)
-            $_fromaddr[] = '"'. $name_ . '"' . ' <' . $email_ . '>';
+            $_fromaddr[] = '"' . $name_ . '"' . ' <' . $email_ . '>';
         if (count($_fromaddr) !== 1)
-            $_fromaddr[] = self::$_options['defaultsender']['name'] . '<' . self::$_options['defaultsender']['email'] . '>';
+            $_fromaddr[] = (self::$_options['defaultsender']['name'] ?? '') . '<' . self::$_options['defaultsender']['email'] . '>';
         $_fromaddr = implode(', ', $_fromaddr);
 
         foreach ($attach_ as $_attachment)
             self::$_service->attach($_attachment);
 
+        self::$_service->set('Content-type', self::$_options['mime'] . '; charset=' . $_charset);
         self::$_service->set('To', $_toaddr);
         self::$_service->set('From', $_fromaddr);
         self::$_service->set('Subject', $subject_);
-
         return self::$_service->send($message_);
     }
 }
