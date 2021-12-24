@@ -87,7 +87,7 @@ final class InputService extends Prefab implements ServiceInterface
                 continue;
             $_result[$key_] = $method_ === 'clean' ? self::$_f3->clean($value_) : self::$_f3->encode($value_);
         }
-        return array_filter($_result);
+        return /*array_filter(*/$_result/*)*/;
     }
 
     /**
