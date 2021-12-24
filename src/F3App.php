@@ -12,6 +12,7 @@ use Prefab;
  */
 class F3App extends Prefab
 {
+    private const DEFAULT_CONFIG_PATH = '../config/';
     static private Base $_f3;
     static private array $_service = [];
 
@@ -20,7 +21,7 @@ class F3App extends Prefab
      * load application configuration and init services
      * @param string $config_path_
      */
-    function __construct(string $config_path_ = '../config/')
+    function __construct(string $config_path_ = self::DEFAULT_CONFIG_PATH)
     {
         self::$_f3 = Base::instance();
         self::register('config', 'Dduers\F3App\Service\ConfigService', ['path' => $config_path_]);
@@ -62,7 +63,6 @@ class F3App extends Prefab
     {
         $_response = self::service('response');
         $_session = self::service('session');
-        $_response::setHeaders($f3_->get('RESPONSE.header') ?? []);
         $_controller = $f3_->get('CONF.namespaces.controller') . '\\' . $f3_->get('PARAMS.ctrl');
         if (class_exists($_controller)) {
             $_t = [];
@@ -77,7 +77,6 @@ class F3App extends Prefab
         }
         if ($f3_->get('RESPONSE.filename'))
             $_response::setHeader('Content-Disposition', 'attachment; filename="' . $f3_->get('RESPONSE.filename') . '"');
-        $_response::setBody($f3_->get('RESPONSE.data'));
         $_response::dumpHeaders();
         $_response::dumpBody();
         $_session::storeToken();
@@ -91,7 +90,8 @@ class F3App extends Prefab
      */
     static function onerror(Base $f3_): bool
     {
-        $f3_->set('RESPONSE.data', [
+        $_response = self::service('response');
+        $_response::setBody([
             'result' => 'error',
             'code' => $f3_->get('ERROR.code'),
             'message' => (int)$f3_->get('ERROR.code') === 500
@@ -126,6 +126,31 @@ class F3App extends Prefab
         if (isset($value_))
             return (self::$_f3->set($name_, $value_));
         else return (self::$_f3->get($name_));
+    }
+
+    /**
+     * set response headers
+     * @param string $header_
+     * @param string $content_
+     * @return void
+     */
+    static function header(string $header_, string $content_): void
+    {
+        $_response = self::service('response');
+        $_response::setHeader($header_, $content_);
+        return;
+    }
+
+    /** 
+     * set response body
+     * @param mixed $data_
+     * @return void
+     */
+    static function body($data_): void
+    {
+        $_response = self::service('response');
+        $_response::setBody($data_);
+        return;
     }
 
     /**
