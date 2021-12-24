@@ -8,8 +8,7 @@ use Base;
 use Prefab;
 
 /**
- * application base controller
- * - route controllers should extend this
+ * application base class
  */
 class F3App extends Prefab
 {
@@ -20,30 +19,31 @@ class F3App extends Prefab
      * class constructor
      * - load application configuration
      * - initialization of class properties
+     * @param string $config_path_
      */
     function __construct(string $config_path_ = '../config/')
     {
         self::$_f3 = Base::instance();
         self::register('config', 'Dduers\F3App\Service\ConfigService', ['path' => $config_path_]);
-        foreach (self::vars('CONF.services') as $name_ => $class_)
-            self::register($name_, $class_, self::vars('CONF.' . $name_));
+        foreach (self::$_f3->get('CONF.services') as $name_ => $class_)
+            self::register($name_, $class_, self::$_f3->get('CONF.' . $name_));
     }
 
     /**
      * routing pre processor
      * - init important variables
      * - csrf check
-     * @param Base $f3_ f3 framework instance
+     * @param Base $f3_
      * @return void
      */
     static function beforeroute(Base $f3_): void
     {
-        $_service_session = self::service('session');
+        $_session = self::service('session');
         $f3_->set('RESPONSE.header', []);
         $f3_->set('RESPONSE.data', []);
-        $f3_->set('PARAMS.vers', $f3_->get('PARAMS.vers') ?: 'v1');
-        $f3_->set('PARAMS.ctrl', $f3_->get('PARAMS.ctrl') ?: 'home');
-        $f3_->set('PARAMS.0', '/' . $f3_->get('PARAMS.ctrl'));
+        //$f3_->set('PARAMS.vers', $f3_->get('PARAMS.vers') ?: 'v1');
+        //$f3_->set('PARAMS.ctrl', $f3_->get('PARAMS.ctrl') ?: 'home');
+        //$f3_->set('PARAMS.0', '/' . $f3_->get('PARAMS.ctrl'));
         if (!$f3_->get('PARAMS.lang') || !file_exists($f3_->get('LOCALES') . $f3_->get('PARAMS.lang') . '.ini')) {
             $f3_->set('PARAMS.lang', $f3_->get('FALLBACK'));
             foreach (explode(',', strtolower($f3_->get('LANGUAGE'))) as $lang_) {
@@ -54,10 +54,8 @@ class F3App extends Prefab
             }
         }
         $f3_->set('LANGUAGE', $f3_->get('PARAMS.lang'));
-        if (!$_service_session::checkToken()) {
+        if ($_session && !$_session::checkToken())
             $f3_->error(401);
-            return;
-        }
         return;
     }
 
@@ -65,38 +63,38 @@ class F3App extends Prefab
      * routing post processor
      * - set response headers
      * - output response data
-     * @param Base $f3_ f3 framework instance
+     * @param Base $f3_
      * @return void
      */
     static function afterroute(Base $f3_): void
     {
-        $_service_response = self::service('response');
-        $_service_session = self::service('session');
-        $_service_response::setHeaders(self::vars('RESPONSE.header'));
-        $_controller = self::vars('CONF.namespaces.controller') . '\\' . self::vars('PARAMS.ctrl');
+        $_response = self::service('response');
+        $_session = self::service('session');
+        $_response::setHeaders($f3_->get('RESPONSE.header'));
+        $_controller = $f3_->get('CONF.namespaces.controller') . '\\' . $f3_->get('PARAMS.ctrl');
         if (class_exists($_controller)) {
             $_t = [];
             foreach (['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT'] as $method_)
                 if (method_exists($_controller, strtolower($method_)))
                     $_t[] = $method_;
             if (count($_t)) {
-                if (self::vars('VERB') === 'OPTIONS')
-                    $_service_response::setHeader('Access-Control-Allow-Methods', implode(',', $_t));
-                $_service_response::setHeader('Allow', implode(',', $_t));
+                if ($f3_->get('VERB') === 'OPTIONS')
+                    $_response::setHeader('Access-Control-Allow-Methods', implode(',', $_t));
+                $_response::setHeader('Allow', implode(',', $_t));
             }
-        } 
-        if (self::vars('RESPONSE.filename'))
-            $_service_response::setHeader('Content-Disposition', 'attachment; filename="' . self::vars('RESPONSE.filename') . '"');
-        $_service_response::setBody($f3_->get('RESPONSE.data'));
-        $_service_response::dumpHeaders();
-        $_service_response::dumpBody();
-        $_service_session::storeToken();
+        }
+        if ($f3_->get('RESPONSE.filename'))
+            $_response::setHeader('Content-Disposition', 'attachment; filename="' . $f3_->get('RESPONSE.filename') . '"');
+        $_response::setBody($f3_->get('RESPONSE.data'));
+        $_response::dumpHeaders();
+        $_response::dumpBody();
+        $_session::storeToken();
         return;
     }
 
     /**
      * custom f3 framework error handler
-     * @param Base $f3_ f3 framework instance
+     * @param Base $f3_
      * @return bool true = error handled, false = fallback to default f3 error handler
      */
     static function onerror(Base $f3_): bool
@@ -111,7 +109,6 @@ class F3App extends Prefab
                 )
                 : $f3_->get('ERROR.text'),
         ]);
-
         return true;
     }
 
@@ -123,18 +120,6 @@ class F3App extends Prefab
     static function error(int $code_): void
     {
         self::$_f3->error($code_);
-        return;
-    }
-
-    /**
-     * reroute to version/language/page
-     * @param string $vers_ version e.g. 'v1'
-     * @param string $ctrl_ name of controller
-     * @return void
-     */
-    static function reroute(string $vers_, string $ctrl_, string $id_ = ''): void
-    {
-        self::$_f3->reroute($vers_ . '/' . $ctrl_ . ($id_ ? '/' . $id_ : '')(self::$_f3->get('QUERY') ? '?' . self::$_f3->get('QUERY') : ''));
         return;
     }
 
@@ -154,8 +139,9 @@ class F3App extends Prefab
     /**
      * register a service
      * @param string $name_
-     * @param object $instance_
-     * @return mixed service instance
+     * @param string $class_
+     * @param array $options_
+     * @return mixed initialized service instance
      */
     static function register(string $name_, string $class_, array $options_ = [])
     {
@@ -179,5 +165,6 @@ class F3App extends Prefab
     static function run(): void
     {
         self::$_f3->run();
+        return;
     }
 }

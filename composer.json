@@ -3,6 +3,7 @@
     "description": "Secure boilerplate for a fat-free framework (f3) web app",
     "type": "library",
     "require": {
+        "php": ">=7.4",
         "bcosca/fatfree-core": "^3.7"
     },
     "license": "MIT",
