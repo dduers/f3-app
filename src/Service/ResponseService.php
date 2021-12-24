@@ -20,7 +20,6 @@ final class ResponseService extends Prefab implements ServiceInterface
     function __construct(array $options_)
     {
         self::$_options = array_merge(self::DEFAULT_OPTIONS, $options_);
-
         if ((self::$_options['header']['Access-Control-Allow-Credentials'][0] ?? false))
             self::$_options['header']['Access-Control-Allow-Credentials'][0] = 'true';
     }

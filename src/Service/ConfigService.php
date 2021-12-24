@@ -28,12 +28,9 @@ final class ConfigService extends Prefab implements ServiceInterface
     {
         self::$_f3 = Base::instance();
         self::$_options = array_merge(self::DEFAULT_OPTIONS, $options_);
-
         self::$_f3->config(__DIR__ . '/../Config/default.ini');
-
         $_config_path = (self::$_options['path'] ?? '') ?: self::DEFAULT_OPTIONS['path'];
         $_config_files = glob($_config_path . '*.ini');
-
         if ($_config_files !== false)
             foreach ($_config_files as $_inifile)
                 self::$_f3->config($_inifile);
@@ -46,14 +43,5 @@ final class ConfigService extends Prefab implements ServiceInterface
     static function getOptions(): array
     {
         return self::$_options;
-    }
-
-    /**
-     * get service instance
-     * @return ConfigService
-     */
-    static function getService(): ConfigService
-    {
-        return self::instance();
     }
 }

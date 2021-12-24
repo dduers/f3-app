@@ -50,6 +50,15 @@ final class MailService extends Prefab implements ServiceInterface
     }
 
     /**
+     * get service instance
+     * @return SMTP|null
+     */
+    static function getService()
+    {
+        return self::$_service;
+    }
+
+    /**
      * send an email message through smtp
      * @param array $to_ array of receiver ['email' => 'name']
      * @param string $subject_

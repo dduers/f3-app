@@ -35,7 +35,6 @@ final class CookieService extends Prefab
     static function setCookie(string $name_, string $value_, array $options_ = []): array
     {
         $_options = array_merge(self::$_options, $options_);
-
         setcookie($name_, $value_, array_filter([
             'expires' => (string)($_options['lifetime'] ?? '') ? (string)(time() + (int)$_options['lifetime']) : NULL,
             'domain' => (string)($_options['domain'] ?? '') ?: NULL,
@@ -44,18 +43,7 @@ final class CookieService extends Prefab
             'path' => (string)($_options['path'] ?? '') ?: NULL,
             'samesite' => (string)($_options['samesite'] ?? '') ?: NULL,
         ]));
-
         return $_options;
-    }
-
-    /**
-     * set cookie options (will be merged with defaults)
-     * @param array $options_
-     * @return array final cookie options
-     */
-    static function setOptions(array $options_): array
-    {
-        return self::$_options = array_merge(self::$_options, $options_);
     }
 
     /**
@@ -65,14 +53,5 @@ final class CookieService extends Prefab
     static function getOptions(): array
     {
         return self::$_options;
-    }
-
-    /**
-     * get service instance
-     * @return CookieService
-     */
-    static function getService(): CookieService
-    {
-        return self::instance();
     }
 }

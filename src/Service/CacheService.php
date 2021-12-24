@@ -27,7 +27,6 @@ final class CacheService extends Prefab implements ServiceInterface
     function __construct(array $options_)
     {
         self::$_options = array_merge(self::DEFAULT_OPTIONS, $options_);
-
         if ((int)self::$_options['enable'] === 1) {
             self::$_service = Cache::instance();
             self::$_service->load(TRUE);

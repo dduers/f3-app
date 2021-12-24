@@ -33,15 +33,6 @@ final class InputService extends Prefab implements ServiceInterface
     }
 
     /**
-     * get service instance
-     * @return SanitizerService
-     */
-    static function getService()
-    {
-        return self::instance();
-    }
-
-    /**
      * get service options
      * @return array
      */
