@@ -34,7 +34,7 @@ final class CookieService extends Prefab
      */
     static function setCookie(string $name_, string $value_, array $options_ = []): array
     {
-        $_options = array_merge(self::$_options, $options_);
+        $_options = array_merge(self::$_options['options'], $options_);
         setcookie($name_, $value_, array_filter([
             'expires' => (string)($_options['lifetime'] ?? '') ? (string)(time() + (int)$_options['lifetime']) : NULL,
             'domain' => (string)($_options['domain'] ?? '') ?: NULL,
