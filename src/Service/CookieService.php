@@ -47,6 +47,16 @@ final class CookieService extends Prefab
     }
 
     /**
+     * set cookie options (will be merged with defaults)
+     * @param array $options_
+     * @return array final cookie options
+     */
+    static function setOptions(array $options_): array
+    {
+        return self::$_options = array_merge(self::$_options, $options_);
+    }
+
+    /**
      * get service options
      * @return array
      */
