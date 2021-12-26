@@ -61,11 +61,12 @@ class F3App extends Prefab
      */
     static function afterroute(Base $f3_): void
     {
-        $_response = self::service('response');
-        $_session = self::service('session');
-        $_response::dumpHeaders();
-        $_response::dumpBody();
-        $_session::storeToken();
+        if ($_response = self::service('response')) {
+            $_response::dumpHeaders();
+            $_response::dumpBody();
+        }
+        if ($_session = self::service('session'))
+            $_session::storeToken();
         return;
     }
 
@@ -101,8 +102,8 @@ class F3App extends Prefab
      */
     static function header(string $header_, string $content_): void
     {
-        $_response = self::service('response');
-        $_response::setHeader($header_, $content_);
+        if ($_response = self::service('response'))
+            $_response::setHeader($header_, $content_);
         return;
     }
 
@@ -113,8 +114,8 @@ class F3App extends Prefab
      */
     static function body($data_): void
     {
-        $_response = self::service('response');
-        $_response::setBody($data_);
+        if ($_response = self::service('response'))
+            $_response::setBody($data_);
         return;
     }
 
@@ -127,7 +128,9 @@ class F3App extends Prefab
      */
     static function register(string $name_, string $class_, array $options_ = [])
     {
-        return self::$_service[$name_] = $class_::instance($options_);
+        if (class_exists($class_))
+            return self::$_service[$name_] = $class_::instance($options_);
+        else return NULL;
     }
 
     /**
