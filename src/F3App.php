@@ -63,20 +63,6 @@ class F3App extends Prefab
     {
         $_response = self::service('response');
         $_session = self::service('session');
-        $_controller = $f3_->get('CONF.namespaces.controller') . '\\' . $f3_->get('PARAMS.ctrl');
-        if (class_exists($_controller)) {
-            $_t = [];
-            foreach (['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT'] as $method_)
-                if (method_exists($_controller, strtolower($method_)))
-                    $_t[] = $method_;
-            if (count($_t)) {
-                if ($f3_->get('VERB') === 'OPTIONS')
-                    $_response::setHeader('Access-Control-Allow-Methods', implode(',', $_t));
-                $_response::setHeader('Allow', implode(',', $_t));
-            }
-        }
-        if ($f3_->get('RESPONSE.filename'))
-            $_response::setHeader('Content-Disposition', 'attachment; filename="' . $f3_->get('RESPONSE.filename') . '"');
         $_response::dumpHeaders();
         $_response::dumpBody();
         $_session::storeToken();
