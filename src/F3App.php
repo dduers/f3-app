@@ -84,27 +84,6 @@ class F3App extends Prefab
     }
 
     /**
-     * custom f3 framework error handler
-     * @param Base $f3_
-     * @return bool true = error handled / false = fallback to default handler
-     */
-    static function onerror(Base $f3_): bool
-    {
-        $_response = self::service('response');
-        $_response::setBody([
-            'result' => 'error',
-            'code' => $f3_->get('ERROR.code'),
-            'message' => (int)$f3_->get('ERROR.code') === 500
-                ? ($f3_->get('DEBUG')
-                    ? $f3_->get('ERROR.text')
-                    : 'Internal Server Error (500)'
-                )
-                : $f3_->get('ERROR.text'),
-        ]);
-        return true;
-    }
-
-    /**
      * issue http error
      * @param int $code_
      * @return void
