@@ -54,7 +54,7 @@ class F3App extends Prefab
     }
 
     /**
-     * routing post processor: 
+     * routing post processor:
      * output response headers and data, store new csrf token to session
      * @param Base $f3_
      * @return void
@@ -107,7 +107,7 @@ class F3App extends Prefab
         return;
     }
 
-    /** 
+    /**
      * set response body
      * @param mixed $data_
      * @return void
