@@ -4,7 +4,7 @@
     "type": "library",
     "require": {
         "php": ">=7.4",
-        "bcosca/fatfree-core": "^3.7"
+        "bcosca/fatfree-core": "^3.8"
     },
     "license": "MIT",
     "authors": [{
