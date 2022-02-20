@@ -84,7 +84,7 @@ final class MailService extends Prefab implements ServiceInterface
             $_fromaddr[] = ($name_ ? '"' . $name_ . '"' : '') . ' <' . $email_ . '>';
 
         if (!count($_fromaddr))
-            $_fromaddr[] = ((self::$_options['defaultsender']['name'] ?? '') ? '"' . self::$_options['defaultsender']['name'] . '"' : '') . '<' . self::$_options['defaultsender']['email'] . '>';
+            $_fromaddr[] = ((self::$_options['defaultsender']['name'] ?? '') ? '"' . self::$_options['defaultsender']['name'] . '"' : '') . ' <' . self::$_options['defaultsender']['email'] . '>';
         $_fromaddr = implode(', ', $_fromaddr);
 
         foreach ($attach_ as $_attachment)
