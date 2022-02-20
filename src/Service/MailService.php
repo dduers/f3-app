@@ -69,7 +69,7 @@ final class MailService extends Prefab implements ServiceInterface
      */
     static function sendMail(array $to_, string $subject_, string $message_, array $from_ = [], array $attach_ = [], string $charset_ = ''): bool
     {
-        if (!(int)self::$_options['enable'] === 1)
+        if ((int)self::$_options['enable'] !== 1)
             return false;
 
         $_charset = $charset_ ?: self::$_options['charset'];
