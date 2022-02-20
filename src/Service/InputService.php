@@ -121,6 +121,14 @@ final class InputService extends Prefab implements ServiceInterface
                     case 'application/json':
                         self::$_f3->set('POST', json_decode(file_get_contents("php://input"), true));
                         break;
+                    case 'application/x-www-form-urlencoded':
+                        break;
+                    case 'multipart/form-data':
+                        // TODO::
+                        break;
+                    case 'text/plain':
+                        // TODO::
+                        break;
                 }
                 break;
             case 'PUT':
