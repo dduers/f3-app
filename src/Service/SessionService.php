@@ -154,6 +154,15 @@ final class SessionService extends Prefab implements ServiceInterface
     }
 
     /**
+     * clear session flash messages
+     * @return void
+     */
+    static function clearFlashMessages(): void
+    {
+        self::$_f3->clear('SESSION._message');
+    }
+
+    /**
      * get service instance
      * @return Session|SQLSession|MongoSession|JigSession|null
      */

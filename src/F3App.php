@@ -65,8 +65,10 @@ class F3App extends Prefab
             $_response::dumpHeaders();
             $_response::dumpBody();
         }
-        if ($_session = self::service('session'))
+        if ($_session = self::service('session')) {
             $_session::storeToken();
+            $_session::clearFlashMessages();
+        }
         return;
     }
 
