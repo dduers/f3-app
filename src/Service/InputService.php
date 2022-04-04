@@ -116,7 +116,7 @@ final class InputService extends Prefab implements ServiceInterface
     {
         switch (self::$_f3->get('VERB')) {
             case 'POST':
-                switch (self::$_request_headers['Content-Type'] ?? '') {
+                switch (explode(';',self::$_request_headers['Content-Type'])[0] ?? '') {
                     default:
                     case 'application/json':
                         self::$_f3->set('POST', json_decode(file_get_contents("php://input"), true));
@@ -132,7 +132,7 @@ final class InputService extends Prefab implements ServiceInterface
                 }
                 break;
             case 'PUT':
-                switch (self::$_request_headers['Content-Type'] ?? '') {
+                switch (explode(';',self::$_request_headers['Content-Type'])[0] ?? '') {
                     default:
                     case 'application/json':
                         self::$_f3->set('PUT', json_decode(file_get_contents("php://input"), true));
