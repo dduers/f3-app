@@ -12,7 +12,8 @@ final class ResponseService extends Prefab implements ServiceInterface
 {
     private const DEFAULT_OPTIONS = [
         'header' => [],
-        'body' => ''
+        'body' => '',
+        'template' => 'template.html',
     ];
     private static $_service;
     private static array $_options = [];
@@ -136,7 +137,7 @@ final class ResponseService extends Prefab implements ServiceInterface
             case 'text/html':
                 if (!empty(self::$_options['body']))
                     echo self::$_options['body'];
-                else echo Template::instance()->render('template.html');
+                else echo Template::instance()->render(self::$_options['template']);
                 break;
         }
     }
