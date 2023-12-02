@@ -8,12 +8,13 @@ use Base;
 use Prefab;
 use Dduers\F3App\Iface\ServiceInterface;
 
-final class InputService extends Prefab implements ServiceInterface
+final class RequestService extends Prefab implements ServiceInterface
 {
     private const DEFAULT_OPTIONS = [
         'sanitizer' => [
             'enable' => 0,
-            'method' => 'encode',
+            'method' => '',
+            'request_methods' => [],
             'exclude' => []
         ]
     ];
@@ -27,9 +28,8 @@ final class InputService extends Prefab implements ServiceInterface
         self::$_options = array_merge(self::DEFAULT_OPTIONS, $options_);
         foreach (getallheaders() as $header_ => $value_)
             self::$_request_headers[$header_] = $value_;
-        self::parseInput();
-        if ((int)self::$_options['sanitizer']['enable'] === 1)
-            self::sanitizeInput();
+        self::parseRequestData();
+        self::sanitizeRequestData();
     }
 
     /**
@@ -64,53 +64,39 @@ final class InputService extends Prefab implements ServiceInterface
     }
 
     /**
-     * sanitize array of user inputs
-     * @param array $subject_ key => pairs to sanitize
-     * @param string $exclude_ exclude keys from sanitation
-     * @param string $method_
-     * @return array
-     */
-    public static function sanitize(array $subject_, array $exclude_ = [], string $method_ = ''): array
-    {
-        $_result = $subject_;
-        foreach ($subject_ as $key_ => $value_) {
-            if (in_array($key_, $exclude_))
-                continue;
-            $_result[$key_] = $method_ === 'clean' ? self::$_f3->clean($value_) : self::$_f3->encode($value_);
-        }
-        return /*array_filter(*/ $_result/*)*/;
-    }
-
-    /**
-     * sanitize input data
+     * sanitize request body data from configured request methods
      * @return void
      */
-    public static function sanitizeInput(): void
+    public static function sanitizeRequestData(): void
     {
-        if (self::$_f3->get('GET'))
-            self::$_f3->set('GET', self::sanitize(
-                self::$_f3->get('GET'),
-                [],
-                self::$_options['sanitizer']['method']
-            ));
-        if (self::$_f3->get('POST'))
-            self::$_f3->set('POST', self::sanitize(
-                self::$_f3->get('POST'),
-                self::$_options['sanitizer']['exclude'] ?? [],
-                self::$_options['sanitizer']['method']
-            ));
-        if (self::$_f3->get('PUT'))
-            self::$_f3->set('PUT', self::sanitize(
-                self::$_f3->get('PUT'),
-                self::$_options['sanitizer']['exclude'] ?? [],
-                self::$_options['sanitizer']['method']
-            ));
-        if (self::$_f3->get('DELETE'))
-            self::$_f3->set('DELETE', self::sanitize(
-                self::$_f3->get('DELETE'),
-                self::$_options['sanitizer']['exclude'] ?? [],
-                self::$_options['sanitizer']['method']
-            ));
+        if ((int)self::$_options['sanitizer']['enable'] !== 1)
+            return;
+        $_request_method = self::$_f3->get('VERB');
+        $_request_methods = is_string(self::$_options['sanitizer']['request_methods'])
+            ? [self::$_options['sanitizer']['request_methods']]
+            : (is_array(self::$_options['sanitizer']['request_methods'])
+                ? self::$_options['sanitizer']['request_methods']
+                : []);
+        if (in_array($_request_method, $_request_methods)) {
+            $_method = self::$_options['sanitizer']['method'];
+            $_exclude = is_string(self::$_options['sanitizer']['exclude'])
+                ? [self::$_options['sanitizer']['exclude']]
+                : (is_array(self::$_options['sanitizer']['exclude'])
+                    ? self::$_options['sanitizer']['exclude']
+                    : []);
+            $_request_data = self::$_f3->get($_request_method);
+            foreach ($_request_data as $key_ => $value_) {
+                if (in_array($key_, $_exclude))
+                    continue;
+                $_request_data[$key_] =
+                    $_method === 'clean'
+                    ? self::$_f3->clean($value_)
+                    : ($_method === 'encode'
+                        ? self::$_f3->encode($value_)
+                        : $_request_data['key']);
+            }
+            self::$_f3->set($_request_method, $_request_data);
+        }
         return;
     }
 
@@ -118,14 +104,17 @@ final class InputService extends Prefab implements ServiceInterface
      * parse input data from various content types and formats to assoc arrays
      * @return void
      */
-    public static function parseInput(): void
+    public static function parseRequestData(): void
     {
-        switch (self::$_f3->get('VERB')) {
+        $_request_method = self::$_f3->get('VERB');
+        switch ($_request_method) {
+            default:
+                break;
             case 'POST':
                 switch (explode(';', self::$_request_headers['Content-Type'])[0] ?? '') {
                     default:
                     case 'application/json':
-                        self::$_f3->set('POST', json_decode(file_get_contents("php://input"), true));
+                        self::$_f3->set($_request_method, json_decode(file_get_contents("php://input"), true));
                         break;
                     case 'application/x-www-form-urlencoded':
                         // normal operation, nothing todo
@@ -142,11 +131,11 @@ final class InputService extends Prefab implements ServiceInterface
                 switch (explode(';', self::$_request_headers['Content-Type'])[0] ?? '') {
                     default:
                     case 'application/json':
-                        self::$_f3->set('PUT', json_decode(file_get_contents("php://input"), true));
+                        self::$_f3->set($_request_method, json_decode(file_get_contents("php://input"), true));
                         break;
                     case 'application/x-www-form-urlencoded':
                         parse_str(file_get_contents("php://input"), $_vars);
-                        self::$_f3->set('PUT', $_vars);
+                        self::$_f3->set($_request_method, $_vars);
                         break;
                     case 'multipart/form-data':
                         // TODO::
@@ -159,14 +148,11 @@ final class InputService extends Prefab implements ServiceInterface
                 switch (explode(';', self::$_request_headers['Content-Type'])[0] ?? '') {
                     default:
                     case 'application/json':
-                        parse_str(file_get_contents("php://input"), $_vars);
-                        self::$_f3->set('DELETE', $_vars);
-                        // TODO::crossbrowser proofs
-                        // self::$_f3->set('DELETE', json_decode(file_get_contents("php://input"), true));
+                        self::$_f3->set($_request_method, json_decode(file_get_contents("php://input"), true));
                         break;
                     case 'application/x-www-form-urlencoded':
                         parse_str(file_get_contents("php://input"), $_vars);
-                        self::$_f3->set('DELETE', $_vars);
+                        self::$_f3->set($_request_method, $_vars);
                         break;
                     case 'multipart/form-data':
                         // nothing todo, delete requests have no multiparts
