@@ -60,7 +60,7 @@ class F3App extends Prefab
 
     /**
      * boot load service classes
-     * @param int $stage_id_ 0: on app construction / 1: before route
+     * @param int $stage_ 0: on app construction / 1: before route
      */
     private static function serviceBootloader(int $stage_ = 0): void
     {

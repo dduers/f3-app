@@ -148,7 +148,9 @@ final class RequestService extends Prefab implements ServiceInterface
                 switch (explode(';', self::$_request_headers['Content-Type'])[0] ?? '') {
                     default:
                     case 'application/json':
-                        self::$_f3->set($_request_method, json_decode(file_get_contents("php://input"), true));
+                        //self::$_f3->set($_request_method, json_decode(file_get_contents("php://input"), true));
+                        parse_str(file_get_contents("php://input"), $_vars);
+                        self::$_f3->set($_request_method, $_vars);
                         break;
                     case 'application/x-www-form-urlencoded':
                         parse_str(file_get_contents("php://input"), $_vars);
