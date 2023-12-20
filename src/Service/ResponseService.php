@@ -102,8 +102,11 @@ final class ResponseService extends Prefab implements ServiceInterface
         foreach (self::$_options['header'] as $header_ => $items_) {
             switch ($header_) {
                 case 'Access-Control-Allow-Origin':
-                    if (in_array($_SERVER['HTTP_ORIGIN'], $items_))
-                        header($header_ . ': ' . $_SERVER['HTTP_ORIGIN'], false);
+                    $_http_origin = $_SERVER['HTTP_ORIGIN'] ?? null;
+                    if ($_http_origin === null)
+                        break;
+                    if (in_array($_http_origin, $items_))
+                        header($header_ . ': ' . $_http_origin, false);
                     break;
                 case 'Set-Cookie':
                     foreach ($items_ as $key_ => $value_)
